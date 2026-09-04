@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SpeakUp</title>
+
+    <link rel="stylesheet" href="CSS/estilo.css">
+</head>
+
+<body>
+
+    <header>
+
+        <h2>SpeakUp</h2>
+
+        <nav>
+            <a href="#">Inicio</a>
+            <a href="#">Practicar</a>
+            <a href="#">Mi progreso</a>
+        </nav>
+
+    </header>
+
+
+    <main>
+
+        <section class="presentacion">
+
+            <h1>Preparador de Pitch</h1>
+
+            <p>
+                Practica tu presentación y mejora
+                tus habilidades de comunicación.
+            </p>
+
+
+            <button id="iniciar">
+                Comenzar práctica
+            </button>
+
+            <button id="detener">
+                Detener micrófono
+            </button>
+
+
+            <p id="estado">
+                Presiona el botón para comenzar...
+            </p>
+
+
+            <textarea
+                id="texto"
+                rows="8"
+                placeholder="Aquí aparecerá lo que digas..."
+            ></textarea>
+
+
+            <!-- RESULTADO DEL ANÁLISIS -->
+
+            <div id="analisis">
+
+                <h2>Análisis del Pitch</h2>
+
+                <p id="cantidadPalabras">
+                    Palabras: 0
+                </p>
+
+                <p id="relleno">
+                    Palabras de relleno: 0
+                </p>
+
+                <p id="repetidas">
+                    Palabras repetidas:
+                </p>
+
+                <p id="recomendacion">
+                    Recomendación:
+                </p>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script src="JS/sistema.js"></script>
+
+</body>
+
+</html>
