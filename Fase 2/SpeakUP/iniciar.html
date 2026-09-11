@@ -7,15 +7,14 @@
 
     <title>SpeakUp</title>
 
-    <link rel="stylesheet" href="CSS/Base.css">
+    <link rel="stylesheet" href="CSS/inicias_sesion.css">
 </head>
 
 <body>
 
     <header>
 
-        <h2>SpeakUp</h2>
-
+        <h2>Ingresar Datos</h2>
 
     </header>
 
@@ -23,16 +22,21 @@
     <main>
 
         <section class="presentacion">
+        <h1>Inicar Sesión</h1>
+        
+        <form class="formulario">
 
-            <h1>Preparador de Pitch</h1>
+            <label for="correo">Correo</label>
+            <input type="email" id="correo">
 
-            <p>
-                Practica tu presentación y mejora
-                tus habilidades de comunicación.
-            </p>
+            <label for="contrasena">Contraseña</label>
+            <input type="password" id="contrasena">
 
+        </form>
 
-            <button id="inicio">
+        <br><br>
+
+            <button id="ingresar">
                 Iniciar Sesión
             </button>
 
@@ -40,12 +44,12 @@
                 Registrarse
             </button>
 
-
         </section>
 
     </main>
 
-    <script src="JS/sistema_inicio.js"></script>
+
+    <script src="JS/inicar.js"></script>
 
 </body>
 

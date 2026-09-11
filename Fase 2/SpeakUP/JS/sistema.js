@@ -26,7 +26,7 @@ boton.onclick = function() {
 
     reconocimiento.start();
 
-    estado.textContent = "🎤 Escuchando...";
+    estado.textContent = "Escuchando...";
 
 };
 
@@ -37,7 +37,7 @@ detener.onclick = function() {
 
     reconocimiento.stop();
 
-    estado.textContent = "⏹️ Micrófono detenido";
+    estado.textContent = "Micrófono detenido";
 
     analizarTexto();
 
@@ -174,3 +174,4 @@ function analizarTexto() {
     }
 
 }
+
