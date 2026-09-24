@@ -1,0 +1,130 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #0B1026;
+    color: white;
+    font-family: Arial, sans-serif;
+    min-height: 100vh;
+}
+
+
+/* MENÚ */
+
+header {
+    background-color: #151B3D;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 15px 60px;
+}
+
+header h2 {
+    color: white;
+    font-size: 30px;
+}
+
+
+/* CONTENIDO */
+
+main {
+    min-height: calc(100vh - 76px);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 40px;
+}
+
+
+/* PANEL */
+
+.presentacion {
+    background-color: #151B3D;
+
+    width: 500px;
+
+    padding: 40px;
+
+    text-align: center;
+
+    border-radius: 15px;
+}
+
+.presentacion h1 {
+    font-size: 35px;
+
+    margin-bottom: 30px;
+}
+
+
+/* FORMULARIO */
+
+.formulario {
+    display: flex;
+
+    flex-direction: column;
+
+    text-align: left;
+
+    gap: 10px;
+}
+
+.formulario label {
+    font-size: 16px;
+
+    margin-top: 5px;
+}
+
+.formulario input {
+    width: 100%;
+
+    padding: 12px;
+
+    background-color: #0B1026;
+
+    color: white;
+
+    border: 1px solid #343B78;
+
+    border-radius: 8px;
+
+    font-size: 16px;
+}
+
+.formulario input:focus {
+    outline: none;
+
+    border-color: #555FC0;
+}
+
+
+/* BOTÓN */
+
+.formulario button {
+    background-color: #252B5A;
+
+    color: white;
+
+    border: none;
+
+    border-radius: 8px;
+
+    padding: 14px;
+
+    margin-top: 15px;
+
+    font-size: 16px;
+
+    cursor: pointer;
+}
+
+.formulario button:hover {
+    background-color: #343B78;
+}
