@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    {% load static %}
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SpeakUp</title>
+
+    <link rel="stylesheet" href="{% static 'usuarios/Pag1_estilo.css' %}?v=2">
+
+</head>
+
+<body>
+
+    <header>
+
+        <h2>Bienvenido {{ nombre_usuario }}</h2>
+
+        <nav>
+            <a href="/voz/">Inicio</a>
+            <a href="#">Mi progreso</a>
+            <a href="/cerrar-sesion/">Cerrar sesión</a>
+        </nav>
+
+    </header>
+
+
+    <main>
+
+        <section class="presentacion">
+
+            <h1>Preparador de Pitch</h1>
+
+
+            <button id="iniciar">
+                Comenzar práctica
+            </button>
+
+            <button id="detener">
+                Detener micrófono
+            </button>
+
+
+            <p id="estado">
+                Presiona el botón para comenzar...
+            </p>
+
+
+            <!-- ZONA DE PRÁCTICA -->
+
+            <div class="zona-practica">
+
+                <!-- TEXTO TRANSCRITO -->
+
+                <textarea
+                    id="texto"
+                    rows="8"
+                    placeholder="Aquí aparecerá lo que digas..."
+                ></textarea>
+
+
+                <!-- SITUACIONES -->
+
+                <div class="situaciones">
+
+                    <h3>Situación</h3>
+
+                    <label>
+                        <input
+                            type="radio"
+                            name="situacion"
+                            value="presentacion"
+                            checked
+                        >
+                        Presentación
+                    </label>
+
+                    <label>
+                        <input
+                            type="radio"
+                            name="situacion"
+                            value="entrevista"
+                        >
+                        Entrevista laboral
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <!-- RESULTADO DEL ANÁLISIS -->
+
+            <div id="analisis">
+
+                <h2>Análisis del Pitch</h2>
+
+                <p id="cantidadPalabras">
+                    Palabras: 0
+                </p>
+
+                <p id="relleno">
+                    Palabras de relleno: 0
+                </p>
+
+                <p id="repetidas">
+                    Palabras repetidas:
+                </p>
+
+                <p id="recomendacion">
+                    Recomendación:
+                </p>
+
+            </div>
+
+
+            <!-- CONSEJOS SEGÚN LA SITUACIÓN -->
+
+            <div id="consejos">
+
+                <h2>Consejos</h2>
+
+                <p id="consejoSituacion">
+                    Selecciona una situación para recibir consejos.
+                </p>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script src="{% static 'usuarios/sistema.js' %}"></script>
+
+</body>
+
+</html>
