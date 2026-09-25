@@ -13,9 +13,7 @@ def registro(request):
         contrasena = request.POST.get("contrasena")
         contrasena2 = request.POST.get("contrasena2")
 
-        # Comprobar que las contraseñas coincidan
         if contrasena != contrasena2:
-
             return render(
                 request,
                 "usuarios/registro.html",
@@ -24,9 +22,7 @@ def registro(request):
                 }
             )
 
-        # Comprobar si el correo ya existe
         if Usuario.objects.filter(correo=correo).exists():
-
             return render(
                 request,
                 "usuarios/registro.html",
@@ -35,12 +31,13 @@ def registro(request):
                 }
             )
 
-        # Crear usuario con contraseña protegida
         Usuario.objects.create(
             nombre=nombre,
             correo=correo,
             contrasena=make_password(contrasena)
         )
+
+        return redirect("/iniciar/")
 
         return render(
             request,
@@ -62,26 +59,33 @@ def login(request):
 
         try:
 
-            usuario = Usuario.objects.get(
-                correo=correo
-            )
+            usuario = Usuario.objects.get(correo=correo)
 
-            # Comprobar contraseña
-            if check_password(
-                contrasena,
-                usuario.contrasena
-            ):
+            # Intentar comprobar contraseña protegida
+            if check_password(contrasena, usuario.contrasena):
 
+                # Contraseña correcta
                 request.session["usuario_id"] = usuario.id
-
                 request.session["usuario_nombre"] = usuario.nombre
 
-                # Administrador
                 if usuario.rol == "admin":
-
                     return redirect("/admin/")
 
-                # Usuario normal
+                return redirect("/voz/")
+
+            # Compatibilidad con usuarios antiguos
+            elif usuario.contrasena == contrasena:
+
+                # Convertir la contraseña antigua a una contraseña protegida
+                usuario.contrasena = make_password(contrasena)
+                usuario.save()
+
+                request.session["usuario_id"] = usuario.id
+                request.session["usuario_nombre"] = usuario.nombre
+
+                if usuario.rol == "admin":
+                    return redirect("/admin/")
+
                 return redirect("/voz/")
 
             else:
@@ -109,14 +113,10 @@ def login(request):
 
 def voz(request):
 
-    # Comprobar que haya iniciado sesión
     if "usuario_id" not in request.session:
-
         return redirect("/login/")
 
-    nombre_usuario = request.session.get(
-        "usuario_nombre"
-    )
+    nombre_usuario = request.session.get("usuario_nombre")
 
     return render(
         request,
