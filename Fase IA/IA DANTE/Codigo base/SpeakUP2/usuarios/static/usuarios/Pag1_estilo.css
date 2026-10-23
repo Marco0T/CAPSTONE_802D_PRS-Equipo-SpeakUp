@@ -1,0 +1,329 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+/* CUERPO */
+
+body {
+    background-color: #0B1026;
+    color: white;
+
+    font-family: Arial, sans-serif;
+
+    min-height: 100vh;
+}
+
+
+/* MENÚ */
+
+header {
+    background-color: #151B3D;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 10px 60px;
+}
+
+header h2 {
+    color: white;
+    font-size: 30px;
+}
+
+nav {
+    display: flex;
+    gap: 30px;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+}
+
+nav a:hover {
+    color: #B8BCE0;
+}
+
+
+/* CONTENIDO */
+
+main {
+    min-height: calc(100vh - 76px);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 40px;
+}
+
+
+/* PANEL PRINCIPAL */
+
+.presentacion {
+    background-color: #151B3D;
+
+    width: 850px;
+    max-width: 95%;
+
+    padding: 50px;
+
+    text-align: center;
+
+    border-radius: 15px;
+}
+
+
+/* TÍTULO */
+
+.presentacion h1 {
+    font-size: 40px;
+
+    margin-bottom: 20px;
+}
+
+
+/* BOTONES */
+
+button {
+    background-color: #252B5A;
+
+    color: white;
+
+    border: none;
+
+    border-radius: 8px;
+
+    padding: 15px 25px;
+
+    margin: 5px;
+
+    font-size: 16px;
+
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #343B78;
+}
+
+
+/* ESTADO */
+
+#estado {
+    color: #B8BCE0;
+
+    margin-top: 20px;
+    margin-bottom: 15px;
+
+    font-size: 16px;
+}
+
+
+/* ================================= */
+/* ZONA DE PRÁCTICA */
+/* ================================= */
+
+.zona-practica {
+    display: flex !important;
+
+    flex-direction: row !important;
+
+    align-items: stretch !important;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    width: 100%;
+
+    margin-top: 10px;
+}
+
+
+/* ================================= */
+/* TEXTAREA */
+/* ================================= */
+
+.zona-practica textarea {
+    flex: 1 !important;
+
+    width: auto !important;
+
+    height: 220px;
+
+    margin: 0 !important;
+
+    padding: 15px;
+
+    background-color: #0B1026;
+
+    color: white;
+
+    border: 1px solid #343B78;
+
+    border-radius: 8px;
+
+    font-size: 16px;
+
+    resize: none;
+}
+
+.zona-practica textarea::placeholder {
+    color: #777C9E;
+}
+
+.zona-practica textarea:focus {
+    outline: none;
+
+    border-color: #555FC0;
+}
+
+
+/* ================================= */
+/* SITUACIONES */
+/* ================================= */
+
+.situaciones {
+    display: flex !important;
+
+    flex-direction: column !important;
+
+    width: 190px !important;
+
+    min-width: 190px !important;
+
+    height: 220px;
+
+    padding: 20px !important;
+
+    background-color: #0B1026 !important;
+
+    border: 1px solid #343B78 !important;
+
+    border-radius: 8px !important;
+
+    text-align: left !important;
+}
+
+
+/* TÍTULO SITUACIÓN */
+
+.situaciones h3 {
+    text-align: center;
+
+    margin-bottom: 25px;
+
+    font-size: 18px;
+}
+
+
+/* OPCIONES */
+
+.situaciones label {
+    display: block !important;
+
+    margin-bottom: 20px;
+
+    cursor: pointer;
+
+    font-size: 15px;
+}
+
+
+/* RADIO */
+
+.situaciones input {
+    margin-right: 8px;
+
+    cursor: pointer;
+}
+
+
+/* ================================= */
+/* ANÁLISIS */
+/* ================================= */
+
+#analisis {
+    margin-top: 30px;
+
+    padding: 25px;
+
+    background-color: #0B1026;
+
+    border-radius: 10px;
+
+    text-align: left;
+}
+
+#analisis h2 {
+    text-align: center;
+
+    margin-bottom: 20px;
+}
+
+#analisis p {
+    color: #B8BCE0;
+
+    margin-bottom: 10px;
+}
+
+
+/* ================================= */
+/* CONSEJOS */
+/* ================================= */
+
+#consejos {
+    margin-top: 30px;
+
+    padding: 25px;
+
+    background-color: #0B1026;
+
+    border-radius: 10px;
+
+    text-align: left;
+}
+
+#consejos h2 {
+    text-align: center;
+
+    margin-bottom: 20px;
+}
+
+#consejos p {
+    color: #B8BCE0;
+
+    margin-bottom: 10px;
+}
+
+
+/* ================================= */
+/* RESPONSIVE */
+/* ================================= */
+
+@media (max-width: 700px) {
+
+    .presentacion {
+        padding: 30px;
+    }
+
+    .zona-practica {
+        flex-direction: column !important;
+    }
+
+    .situaciones {
+        width: 100% !important;
+        min-width: 100% !important;
+        height: auto;
+    }
+
+    .zona-practica textarea {
+        width: 100% !important;
+    }
+
+}

@@ -1,0 +1,116 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle de conversación - SpeakUP</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            color: #222;
+            margin: 0;
+            padding: 30px;
+        }
+
+        main {
+            max-width: 850px;
+            margin: auto;
+        }
+
+        section {
+            background: white;
+            margin: 18px 0;
+            padding: 22px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px #00000012;
+        }
+
+        .boton {
+            display: inline-block;
+            padding: 10px 16px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            border-radius: 7px;
+        }
+
+        .texto {
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <h1>Detalle de la práctica</h1>
+
+        <section>
+            <h2>Información general</h2>
+
+            <p>
+                <strong>Fecha de inicio:</strong>
+                {{ conversacion.fecha_inicio|date:"d/m/Y H:i:s" }}
+            </p>
+
+            <p>
+                <strong>Fecha de término registrada:</strong>
+                {{ conversacion.fecha_fin|date:"d/m/Y H:i:s" }}
+            </p>
+
+            <p>
+                <strong>Situación:</strong>
+                {{ conversacion.situacion }}
+            </p>
+
+            <p>
+                <strong>Total de palabras:</strong>
+                {{ conversacion.cantidad_palabras }}
+            </p>
+
+            <p>
+                <strong>Palabras de relleno:</strong>
+                {{ conversacion.palabras_relleno }}
+            </p>
+        </section>
+
+        <section>
+            <h2>Transcripción completa</h2>
+            <p class="texto">{{ conversacion.transcripcion }}</p>
+        </section>
+
+        <section>
+            <h2>Palabras repetidas</h2>
+
+            {% if conversacion.palabras_repetidas %}
+                <ul>
+                    {% for palabra, cantidad in conversacion.palabras_repetidas.items %}
+                        <li>{{ palabra }}: {{ cantidad }} veces</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No hay palabras repetidas registradas.</p>
+            {% endif %}
+        </section>
+
+        <section>
+            <h2>Recomendación general</h2>
+            <p class="texto">{{ conversacion.recomendacion|default:"Sin recomendaciones registradas." }}</p>
+        </section>
+
+        <section>
+            <h2>Consejo para la situación</h2>
+            <p class="texto">{{ conversacion.consejo_situacion|default:"Sin consejos registrados." }}</p>
+        </section>
+
+        <p>
+            <a href="{% url 'historial' %}" class="boton">
+                Volver al historial
+            </a>
+        </p>
+    </main>
+</body>
+</html>
