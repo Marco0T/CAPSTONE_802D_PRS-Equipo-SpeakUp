@@ -1,0 +1,490 @@
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    {% load static %}
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SpeakUP3</title>
+
+    <link
+        rel="stylesheet"
+        href="{% static 'usuarios/Pag1_estilo.css' %}?v=7"
+    >
+</head>
+
+<body>
+
+    <!-- ========================= -->
+    <!-- ENCABEZADO -->
+    <!-- ========================= -->
+
+    <header>
+
+        <h2>Bienvenido {{ nombre_usuario }}</h2>
+
+        <nav>
+            <a href="/voz/">Inicio</a>
+            <a href="/historial/">Mi progreso</a>
+            <a href="/cerrar-sesion/">Cerrar sesión</a>
+        </nav>
+
+    </header>
+
+    <main>
+
+        <section class="presentacion">
+
+            <h1>Preparador de Pitch</h1>
+
+            <!-- ========================= -->
+            <!-- 1. SELECCIÓN DE SITUACIÓN -->
+            <!-- ========================= -->
+
+            <div class="situaciones">
+
+                <h3>¿Qué vas a practicar?</h3>
+
+                <div class="opciones-situacion">
+
+                    <label>
+                        <input
+                            type="radio"
+                            name="situacion"
+                            value="presentacion"
+                            checked
+                        >
+                        Presentación
+                    </label>
+
+                    <label>
+                        <input
+                            type="radio"
+                            name="situacion"
+                            value="entrevista"
+                        >
+                        Entrevista laboral
+                    </label>
+
+                </div>
+
+            </div>
+
+            <!-- ========================= -->
+            <!-- 2. PRIVACIDAD Y PERMISOS -->
+            <!-- ========================= -->
+
+            <div
+                class="bloque-privacidad"
+                aria-labelledby="tituloPrivacidad"
+            >
+
+                <h3 id="tituloPrivacidad">
+                    🔒 Privacidad y permisos
+                </h3>
+
+                <p class="privacidad-camara">
+                    El micrófono se utiliza para reconocer
+                    y transcribir tu voz durante la práctica.
+                    La cámara es opcional y puedes practicar
+                    sin activarla.
+                </p>
+
+                <p class="aviso-permisos">
+                    El navegador solicitará los permisos
+                    correspondientes cuando utilices estas
+                    funciones. Puedes rechazar el acceso
+                    a la cámara. Al activar la cámara, comenzará
+                    a grabarse el video automáticamente.
+                    La grabación es solo de video, sin audio.
+                    No se enviará al servidor ni se guardará
+                    automáticamente en Mi progreso.
+                </p>
+
+            </div>
+
+            <!-- ========================= -->
+            <!-- 3. CONTROLES DE PRÁCTICA -->
+            <!-- ========================= -->
+
+            <div class="controles-practica">
+
+                <button
+                    id="iniciar"
+                    type="button"
+                >
+                    Comenzar práctica
+                </button>
+
+                <button
+                    id="detener"
+                    type="button"
+                >
+                    Detener micrófono
+                </button>
+
+            </div>
+
+            <p id="estado">
+                Presiona el botón para comenzar...
+            </p>
+
+            <!-- ========================= -->
+            <!-- 4. TRANSCRIPCIÓN Y CÁMARA -->
+            <!-- ========================= -->
+
+            <div class="panel-practica">
+
+                <!-- TRANSCRIPCIÓN -->
+
+                <div class="panel-transcripcion">
+
+                    <h2>Transcripción</h2>
+
+                    <textarea
+                        id="texto"
+                        rows="6"
+                        placeholder="Aquí aparecerá lo que digas..."
+                        aria-label="Transcripción de la práctica"
+                    ></textarea>
+
+                </div>
+
+                <!-- CÁMARA OPCIONAL -->
+
+                <section
+                    class="seccion-camara"
+                    id="seccionCamara"
+                    aria-labelledby="tituloCamara"
+                >
+
+                    <h2 id="tituloCamara">
+                        Cámara opcional
+                    </h2>
+
+                    <!-- VISTA PREVIA -->
+
+                    <div class="contenedor-camara">
+
+                        <video
+                            id="videoCamara"
+                            autoplay
+                            playsinline
+                            muted
+                            aria-label="Vista previa de tu cámara"
+                            hidden
+                        ></video>
+
+                        <div
+                            id="camaraApagada"
+                            class="camara-apagada"
+                        >
+
+                            <span aria-hidden="true">
+                                📷
+                            </span>
+
+                            <p>
+                                Cámara desactivada
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <!-- BOTONES DE CÁMARA -->
+
+                    <div class="controles-camara">
+
+                        <button
+                            type="button"
+                            id="activarCamara"
+                        >
+                            Activar cámara
+                        </button>
+
+                        <button
+                            type="button"
+                            id="desactivarCamara"
+                            disabled
+                        >
+                            Desactivar cámara
+                        </button>
+
+                    </div>
+
+                    <!-- ESTADO DE LA CÁMARA -->
+
+                    <p
+                        id="estadoCamara"
+                        role="status"
+                        aria-live="polite"
+                    >
+                        Cámara desactivada.
+                    </p>
+
+                    <!-- ========================= -->
+                    <!-- 5. GRABACIÓN AUTOMÁTICA -->
+                    <!-- ========================= -->
+
+                    <div
+                        class="seccion-grabacion"
+                        aria-labelledby="tituloGrabacion"
+                    >
+
+                        <h3 id="tituloGrabacion">
+                            Grabación de video
+                        </h3>
+
+                        <div class="controles-grabacion">
+
+                            <button
+                                type="button"
+                                id="iniciarGrabacion"
+                                disabled
+                            >
+                                🔴 Reiniciar grabación
+                            </button>
+
+                            <button
+                                type="button"
+                                id="detenerGrabacion"
+                                disabled
+                            >
+                                ⏹ Detener grabación
+                            </button>
+
+                        </div>
+
+                        <p
+                            id="estadoGrabacion"
+                            role="status"
+                            aria-live="polite"
+                        >
+                            Al activar la cámara, la grabación
+                            comenzará automáticamente.
+                        </p>
+
+                        <p
+                            id="indicadorGrabacion"
+                            class="indicador-grabacion"
+                            hidden
+                        >
+                            🔴 Grabando video...
+                        </p>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- ========================= -->
+    <!-- ELEMENTOS DE COMPATIBILIDAD -->
+    <!-- ========================= -->
+
+    <div id="analisis" hidden>
+
+        <p id="cantidadPalabras">
+            Palabras: 0
+        </p>
+
+        <p id="relleno">
+            Palabras de relleno: 0
+        </p>
+
+        <p id="repetidas">
+            Palabras repetidas:
+        </p>
+
+        <p id="recomendacion">
+            Recomendación:
+        </p>
+
+    </div>
+
+    <div id="consejos" hidden>
+        <p id="consejoSituacion"></p>
+    </div>
+
+    <!-- ========================= -->
+    <!-- VENTANA DE RESULTADOS -->
+    <!-- ========================= -->
+
+    <div
+        id="ventanaResultados"
+        class="ventana-resultados"
+        hidden
+    >
+
+        <div
+            class="contenido-resultados"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="tituloResultados"
+        >
+
+            <button
+                type="button"
+                id="cerrarResultados"
+                aria-label="Cerrar resultados"
+            >
+                ✕
+            </button>
+
+            <h2 id="tituloResultados">
+                ¡Práctica finalizada!
+            </h2>
+
+            <p id="mensajeGuardado">
+                Preparando tus resultados...
+            </p>
+
+            <!-- ========================= -->
+            <!-- RESUMEN DE RESULTADOS -->
+            <!-- ========================= -->
+
+            <div class="resumen-resultados">
+
+                <h3>
+                    Resultados de tu práctica
+                </h3>
+
+                <p id="modalPalabras">
+                    Palabras: 0
+                </p>
+
+                <p id="modalMuletillas">
+                    Muletillas: 0
+                </p>
+
+                <p id="modalRepetidas">
+                    Palabras repetidas: ninguna
+                </p>
+
+            </div>
+
+            <!-- ========================= -->
+            <!-- RECOMENDACIONES -->
+            <!-- ========================= -->
+
+            <div class="recomendaciones-resultados">
+
+                <h3>Recomendación</h3>
+
+                <p id="modalRecomendacion"></p>
+
+                <h3>
+                    Consejo según tu situación
+                </h3>
+
+                <p id="modalConsejo"></p>
+
+            </div>
+
+            <!-- ========================= -->
+            <!-- DISCURSO MEJORADO -->
+            <!-- ========================= -->
+
+            <div class="discurso-mejorado">
+
+                <h3>✨ Mejor intenta esto</h3>
+
+                <p id="modalMejora">
+                    Aquí aparecerá una versión
+                    mejorada de tu discurso.
+                </p>
+
+            </div>
+
+            <!-- ========================= -->
+            <!-- VIDEO EN LOS RESULTADOS -->
+            <!-- ========================= -->
+
+            <p
+                id="mensajeVideoResultados"
+                class="mensaje-video-resultados"
+                aria-live="polite"
+            >
+                Si activaste la cámara, tu grabación
+                aparecerá aquí al finalizar.
+            </p>
+
+            <div
+                id="seccionVideoGrabado"
+                class="seccion-video-grabado video-en-resultados"
+                hidden
+            >
+
+                <h3>
+                    🎥 Grabación de tu práctica
+                </h3>
+
+                <video
+                    id="videoGrabado"
+                    controls
+                    playsinline
+                    preload="metadata"
+                    aria-label="Reproducción de tu grabación"
+                ></video>
+
+                <div class="controles-video-grabado">
+
+                    <a
+                        id="descargarVideo"
+                        href="#"
+                        download
+                        class="boton-descarga-video"
+                    >
+                        Descargar video
+                    </a>
+
+                    <button
+                        type="button"
+                        id="descartarVideo"
+                    >
+                        Descartar video
+                    </button>
+
+                </div>
+
+                <p class="aviso-video-local">
+                    El video se mantiene temporalmente
+                    en esta página. Descárgalo antes
+                    de salir si quieres conservarlo.
+                </p>
+
+            </div>
+
+            <!-- ========================= -->
+            <!-- VOLVER A PRACTICAR -->
+            <!-- ========================= -->
+
+            <button
+                type="button"
+                id="volverPractica"
+            >
+                Volver a practicar
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- JAVASCRIPT PRINCIPAL -->
+    <!-- ========================= -->
+
+    <script
+        src="{% static 'usuarios/sistema.js' %}?v=5"
+    ></script>
+
+</body>
+</html>

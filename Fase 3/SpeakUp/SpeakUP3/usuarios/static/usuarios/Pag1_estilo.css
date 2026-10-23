@@ -1,0 +1,979 @@
+
+/* ================================= */
+/* SPEAKUP3 - ESTILOS GENERALES */
+/* ================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background-color: #0B1026;
+    color: white;
+    font-family: Arial, sans-serif;
+    min-height: 100vh;
+}
+
+body.modal-abierto {
+    overflow: hidden;
+}
+
+/* ================================= */
+/* ENCABEZADO */
+/* ================================= */
+
+header {
+    background-color: #151B3D;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 12px 40px;
+}
+
+header h2 {
+    color: white;
+    font-size: 25px;
+}
+
+nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    font-size: 15px;
+}
+
+nav a:hover {
+    color: #B8BCE0;
+}
+
+/* ================================= */
+/* CONTENIDO PRINCIPAL */
+/* ================================= */
+
+main {
+    min-height: calc(100vh - 65px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 18px 20px;
+}
+
+/* ================================= */
+/* PANEL PRINCIPAL */
+/* ================================= */
+
+.presentacion {
+    background-color: #151B3D;
+    width: 1050px;
+    max-width: 100%;
+    padding: 22px 28px;
+    text-align: center;
+    border-radius: 15px;
+}
+
+.presentacion h1 {
+    font-size: 29px;
+    margin-bottom: 14px;
+}
+
+/* ================================= */
+/* BOTONES GENERALES */
+/* ================================= */
+
+button {
+    background-color: #252B5A;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    margin: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+button:hover {
+    background-color: #343B78;
+}
+
+button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+button:disabled:hover {
+    background-color: #252B5A;
+}
+
+button:focus-visible,
+a:focus-visible,
+textarea:focus-visible,
+input:focus-visible {
+    outline: 2px solid #7ED8F5;
+    outline-offset: 3px;
+}
+
+/* ================================= */
+/* SITUACIÓN DE PRÁCTICA */
+/* ================================= */
+
+.situaciones {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px 16px;
+    background-color: #0B1026;
+    border: 1px solid #343B78;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.situaciones h3 {
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.opciones-situacion {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 25px;
+}
+
+.opciones-situacion label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #DCE8FF;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.opciones-situacion input {
+    accent-color: #7ED8F5;
+    cursor: pointer;
+}
+
+/* ================================= */
+/* PRIVACIDAD Y PERMISOS */
+/* ================================= */
+
+.bloque-privacidad {
+    width: 100%;
+    padding: 10px 15px;
+    margin-bottom: 12px;
+    background-color: #102539;
+    border: 1px solid #2D6877;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.bloque-privacidad h3 {
+    color: #9DE6D3;
+    font-size: 15px;
+    margin-bottom: 6px;
+}
+
+.privacidad-camara {
+    color: #DCE8FF;
+    font-size: 13px;
+    line-height: 1.45;
+    margin-bottom: 5px;
+}
+
+.aviso-permisos {
+    color: #A9BCD5;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+/* ================================= */
+/* CONTROLES DE PRÁCTICA */
+/* ================================= */
+
+.controles-practica {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.controles-practica button {
+    margin: 0;
+    padding: 11px 18px;
+}
+
+#estado {
+    color: #B8BCE0;
+    font-size: 14px;
+    margin-top: 9px;
+    margin-bottom: 12px;
+}
+
+/* ================================= */
+/* TRANSCRIPCIÓN Y CÁMARA */
+/* ================================= */
+
+.panel-practica {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1fr);
+    align-items: start;
+    gap: 14px;
+    width: 100%;
+}
+
+/* ================================= */
+/* PANEL DE TRANSCRIPCIÓN */
+/* ================================= */
+
+.panel-transcripcion {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 12px;
+    background-color: #0B1026;
+    border: 1px solid #343B78;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.panel-transcripcion h2 {
+    color: white;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+#texto {
+    display: block;
+    width: 100%;
+    height: 235px;
+    min-height: 235px;
+    margin: 0;
+    padding: 12px;
+    background-color: #0B1026;
+    color: white;
+    border: 1px solid #343B78;
+    border-radius: 8px;
+    font-family: Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    resize: vertical;
+    overflow-y: auto;
+}
+
+#texto::placeholder {
+    color: #777C9E;
+}
+
+#texto:focus {
+    outline: none;
+    border-color: #555FC0;
+}
+
+/* ================================= */
+/* PANEL DE CÁMARA */
+/* ================================= */
+
+.seccion-camara {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 12px;
+    background-color: #0B1026;
+    border: 1px solid #343B78;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.seccion-camara h2 {
+    color: white;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+/* ================================= */
+/* VISTA PREVIA DE CÁMARA */
+/* ================================= */
+
+.contenedor-camara {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    margin: 0 auto 10px;
+    overflow: hidden;
+    background-color: #101831;
+    border: 1px solid #343B78;
+    border-radius: 8px;
+}
+
+#videoCamara {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+    background-color: #101831;
+}
+
+#videoCamara[hidden] {
+    display: none !important;
+}
+
+/* ================================= */
+/* CÁMARA APAGADA */
+/* ================================= */
+
+.camara-apagada {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    color: #B8BCE0;
+    background-color: #101831;
+}
+
+.camara-apagada[hidden] {
+    display: none !important;
+}
+
+.camara-apagada span {
+    font-size: 35px;
+}
+
+.camara-apagada p {
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+/* ================================= */
+/* CONTROLES DE CÁMARA */
+/* ================================= */
+
+.controles-camara {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.controles-camara button {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    padding: 10px 8px;
+    font-size: 13px;
+}
+
+#activarCamara {
+    background-color: #343B78;
+}
+
+#activarCamara:not(:disabled):hover {
+    background-color: #4C56A3;
+}
+
+#desactivarCamara {
+    background-color: #613447;
+}
+
+#desactivarCamara:not(:disabled):hover {
+    background-color: #81465D;
+}
+
+#activarCamara:disabled,
+#desactivarCamara:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+#estadoCamara {
+    color: #B8BCE0;
+    font-size: 12px;
+    line-height: 1.4;
+    margin-top: 8px;
+}
+
+/* ================================= */
+/* GRABACIÓN AUTOMÁTICA DE VIDEO */
+/* ================================= */
+
+.seccion-grabacion {
+    width: 100%;
+    margin-top: 12px;
+    padding: 12px;
+    background-color: #111936;
+    border: 1px solid #343B78;
+    border-radius: 10px;
+}
+
+.seccion-grabacion h3 {
+    color: #FFFFFF;
+    font-size: 15px;
+    margin-bottom: 10px;
+}
+
+.controles-grabacion {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.controles-grabacion button {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    padding: 10px 8px;
+    font-size: 12px;
+    white-space: normal;
+}
+
+#iniciarGrabacion {
+    background-color: #923D50;
+}
+
+#iniciarGrabacion:not(:disabled):hover {
+    background-color: #B54D63;
+}
+
+#detenerGrabacion {
+    background-color: #343B78;
+}
+
+#detenerGrabacion:not(:disabled):hover {
+    background-color: #4C56A3;
+}
+
+#estadoGrabacion {
+    color: #A9BCD5;
+    font-size: 12px;
+    line-height: 1.4;
+    margin-top: 10px;
+}
+
+/* ================================= */
+/* INDICADOR DE GRABACIÓN ACTIVA */
+/* ================================= */
+
+.indicador-grabacion {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 7px 12px;
+    color: #FFB8C2;
+    background-color: rgba(180, 40, 70, 0.15);
+    border: 1px solid #923D50;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    animation: pulsoGrabacion 1.5s ease-in-out infinite;
+}
+
+.indicador-grabacion[hidden] {
+    display: none !important;
+}
+
+@keyframes pulsoGrabacion {
+    0%, 100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.55;
+    }
+}
+
+/* ================================= */
+/* REPRODUCTOR DE VIDEO */
+/* ================================= */
+
+.seccion-video-grabado {
+    width: 100%;
+    margin-top: 12px;
+    padding: 12px;
+    background-color: #111936;
+    border: 1px solid #4B77B8;
+    border-radius: 10px;
+}
+
+.seccion-video-grabado[hidden] {
+    display: none !important;
+}
+
+.seccion-video-grabado h3 {
+    color: #7ED8F5;
+    font-size: 18px;
+    margin-bottom: 12px;
+}
+
+#videoGrabado {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background-color: #050915;
+    border: 1px solid #343B78;
+    border-radius: 8px;
+    object-fit: contain;
+}
+
+/* ================================= */
+/* DESCARGAR Y DESCARTAR VIDEO */
+/* ================================= */
+
+.controles-video-grabado {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.boton-descarga-video {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+    padding: 10px 8px;
+    background-color: #226D64;
+    color: white;
+    text-decoration: none;
+    text-align: center;
+    border-radius: 8px;
+    font-size: 12px;
+    transition: background-color 0.2s ease;
+}
+
+.boton-descarga-video:hover {
+    background-color: #2E9286;
+}
+
+#descartarVideo {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    padding: 10px 8px;
+    background-color: #613447;
+    font-size: 12px;
+}
+
+#descartarVideo:hover {
+    background-color: #81465D;
+}
+
+.aviso-video-local {
+    color: #A9BCD5;
+    font-size: 11px;
+    line-height: 1.5;
+    margin-top: 10px;
+}
+
+/* ================================= */
+/* OCULTAR RESULTADOS ANTIGUOS */
+/* ================================= */
+
+#analisis,
+#consejos {
+    display: none !important;
+}
+
+/* ================================= */
+/* VENTANA EMERGENTE DE RESULTADOS */
+/* ================================= */
+
+#ventanaResultados[hidden] {
+    display: none !important;
+}
+
+.ventana-resultados {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background-color: rgba(3, 7, 24, 0.82);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    animation: aparecerFondo 0.3s ease;
+}
+
+/* ================================= */
+/* CUADRO CENTRAL DE RESULTADOS */
+/* ================================= */
+
+.contenido-resultados {
+    position: relative;
+    width: 850px;
+    max-width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 35px;
+    background-color: #151B3D;
+    color: white;
+    border: 1px solid #343B78;
+    border-radius: 18px;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6);
+    animation: aparecerVentana 0.4s ease;
+}
+
+/* ================================= */
+/* TÍTULO DEL MODAL */
+/* ================================= */
+
+.contenido-resultados h2 {
+    font-size: 30px;
+    text-align: center;
+    margin-bottom: 12px;
+    padding: 0 30px;
+}
+
+#mensajeGuardado {
+    color: #B8BCE0;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+/* ================================= */
+/* BOTÓN CERRAR */
+/* ================================= */
+
+#cerrarResultados {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 8px 14px;
+    font-size: 22px;
+    line-height: 1;
+    background-color: #252B5A;
+}
+
+#cerrarResultados:hover {
+    background-color: #454D91;
+}
+
+/* ================================= */
+/* TARJETAS DE RESULTADOS */
+/* ================================= */
+
+.resumen-resultados,
+.recomendaciones-resultados,
+.discurso-mejorado {
+    background-color: #0B1026;
+    border: 1px solid #343B78;
+    border-radius: 12px;
+    padding: 22px;
+    margin-bottom: 18px;
+}
+
+.contenido-resultados h3 {
+    color: white;
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+.contenido-resultados p {
+    color: #C8CEEC;
+    font-size: 16px;
+    line-height: 1.7;
+    margin-bottom: 10px;
+    overflow-wrap: anywhere;
+}
+
+.recomendaciones-resultados h3:not(:first-child) {
+    margin-top: 20px;
+}
+
+/* ================================= */
+/* MEJOR INTENTA ESTO */
+/* ================================= */
+
+.discurso-mejorado {
+    background: linear-gradient(
+        135deg,
+        #18274A,
+        #172044
+    );
+    border: 1px solid #4B77B8;
+}
+
+.discurso-mejorado h3 {
+    color: #7ED8F5;
+}
+
+#modalMejora {
+    color: #DCE8FF;
+    line-height: 1.8;
+    white-space: pre-line;
+}
+
+/* ================================= */
+/* VIDEO DENTRO DE RESULTADOS */
+/* ================================= */
+
+.video-en-resultados {
+    margin: 0 0 18px;
+    padding: 22px;
+    text-align: center;
+    background-color: #0B1026;
+    border: 1px solid #4B77B8;
+    border-radius: 12px;
+}
+
+.video-en-resultados h3 {
+    color: #7ED8F5;
+}
+
+.video-en-resultados #videoGrabado {
+    max-height: 430px;
+}
+
+.mensaje-video-resultados {
+    text-align: center;
+    font-size: 14px;
+    color: #A9BCD5;
+    margin-bottom: 15px;
+}
+
+.mensaje-video-resultados[hidden] {
+    display: none !important;
+}
+
+.video-en-resultados .controles-video-grabado {
+    margin-top: 15px;
+}
+
+.video-en-resultados .boton-descarga-video,
+.video-en-resultados #descartarVideo {
+    font-size: 14px;
+    padding: 12px 16px;
+}
+
+.video-en-resultados .aviso-video-local {
+    margin-top: 15px;
+    font-size: 12px;
+}
+
+/* ================================= */
+/* BOTÓN VOLVER A PRACTICAR */
+/* ================================= */
+
+#volverPractica {
+    display: block;
+    margin: 20px auto 0;
+    background-color: #343B78;
+    padding: 14px 28px;
+}
+
+#volverPractica:hover {
+    background-color: #4C56A3;
+}
+
+/* ================================= */
+/* ANIMACIONES */
+/* ================================= */
+
+@keyframes aparecerFondo {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes aparecerVentana {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ================================= */
+/* RESPONSIVE - TABLET */
+/* ================================= */
+
+@media (max-width: 850px) {
+
+    header {
+        padding: 12px 20px;
+    }
+
+    .presentacion {
+        padding: 18px;
+    }
+
+    .panel-practica {
+        gap: 10px;
+    }
+
+    .panel-transcripcion,
+    .seccion-camara {
+        padding: 10px;
+    }
+
+    .controles-camara,
+    .controles-grabacion,
+    .controles-video-grabado {
+        flex-wrap: wrap;
+    }
+
+    .controles-camara button,
+    .controles-grabacion button,
+    .controles-video-grabado button,
+    .boton-descarga-video {
+        font-size: 12px;
+    }
+}
+
+/* ================================= */
+/* RESPONSIVE - CELULAR */
+/* ================================= */
+
+@media (max-width: 650px) {
+
+    header {
+        flex-direction: column;
+        gap: 12px;
+        padding: 15px;
+        text-align: center;
+    }
+
+    header h2 {
+        font-size: 22px;
+    }
+
+    nav {
+        justify-content: center;
+        gap: 15px;
+    }
+
+    main {
+        padding: 15px 10px;
+    }
+
+    .presentacion {
+        padding: 16px 12px;
+    }
+
+    .presentacion h1 {
+        font-size: 25px;
+    }
+
+    .opciones-situacion {
+        gap: 15px;
+    }
+
+    .controles-practica {
+        flex-direction: column;
+    }
+
+    .controles-practica button {
+        width: 100%;
+    }
+
+    .panel-practica {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    #texto {
+        height: 200px;
+        min-height: 200px;
+    }
+
+    .contenedor-camara {
+        max-width: 100%;
+    }
+
+    .controles-camara button,
+    .controles-grabacion button {
+        font-size: 12px;
+    }
+
+    .seccion-grabacion,
+    .seccion-video-grabado {
+        padding: 10px;
+    }
+
+    .ventana-resultados {
+        padding: 10px;
+    }
+
+    .contenido-resultados {
+        padding: 25px 18px;
+        max-height: 95vh;
+    }
+
+    .contenido-resultados h2 {
+        font-size: 24px;
+        padding: 0 25px;
+    }
+
+    .contenido-resultados h3 {
+        font-size: 18px;
+    }
+
+    .resumen-resultados,
+    .recomendaciones-resultados,
+    .discurso-mejorado,
+    .video-en-resultados {
+        padding: 16px;
+    }
+
+    .video-en-resultados .controles-video-grabado {
+        flex-direction: column;
+    }
+
+    .video-en-resultados .boton-descarga-video,
+    .video-en-resultados #descartarVideo {
+        width: 100%;
+        flex: auto;
+    }
+}
+
+/* ================================= */
+/* ACCESIBILIDAD */
+/* ================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    html {
+        scroll-behavior: auto;
+    }
+
+    .ventana-resultados,
+    .contenido-resultados,
+    .indicador-grabacion {
+        animation: none;
+    }
+}
