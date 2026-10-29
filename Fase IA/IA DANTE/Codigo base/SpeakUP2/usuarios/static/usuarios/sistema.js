@@ -10,6 +10,10 @@ const detener = document.getElementById("detener");
 
 const estado = document.getElementById("estado");
 const texto = document.getElementById("texto");
+const solicitarFeedback = document.getElementById("solicitarFeedback");
+const modalFeedback = document.getElementById("modalFeedback");
+const cerrarFeedback = document.getElementById("cerrarFeedback");
+const contenidoFeedback = document.getElementById("contenidoFeedback");
 
 const cantidadPalabras = document.getElementById("cantidadPalabras");
 const relleno = document.getElementById("relleno");
@@ -46,6 +50,7 @@ let escuchando = false;
 let guardarAlTerminar = false;
 let guardando = false;
 let fechaInicio = null;
+let reinicioReconocimiento = null;
 
 /* ============================= */
 /* OBTENER SITUACIÓN */
@@ -65,8 +70,14 @@ function obtenerSituacion() {
 /* COMENZAR PRÁCTICA */
 /* ============================= */
 
-boton.onclick = function () {
+boton.onclick = async function () {
     if (!reconocimiento || escuchando || guardando) {
+        return;
+    }
+
+    if (!navigator.onLine) {
+        estado.textContent =
+            "Sin conexión. El reconocimiento de voz del navegador necesita Internet.";
         return;
     }
 
@@ -77,17 +88,48 @@ boton.onclick = function () {
     guardarAlTerminar = false;
     escuchando = true;
 
+    if (reinicioReconocimiento !== null) {
+        clearTimeout(reinicioReconocimiento);
+        reinicioReconocimiento = null;
+    }
+
     boton.disabled = true;
     detener.disabled = false;
 
-    estado.textContent = "Escuchando...";
+    estado.textContent = "Solicitando acceso al micrófono...";
 
     try {
+        if (!navigator.mediaDevices ||
+            !navigator.mediaDevices.getUserMedia) {
+            throw new Error("El navegador no permite solicitar acceso al micrófono.");
+        }
+
+        const flujoAudio = await navigator.mediaDevices.getUserMedia({
+            audio: true
+        });
+
+        flujoAudio.getTracks().forEach(function (pista) {
+            pista.stop();
+        });
+
+        estado.textContent = "Escuchando...";
         reconocimiento.start();
     } catch (error) {
         escuchando = false;
+        detener.disabled = true;
         boton.disabled = false;
-        estado.textContent = "No se pudo iniciar el micrófono.";
+
+        if (error.name === "NotAllowedError" ||
+            error.name === "SecurityError") {
+            estado.textContent =
+                "Micrófono bloqueado. Permítelo para este sitio desde el candado de Edge y vuelve a intentarlo.";
+        } else if (error.name === "NotFoundError") {
+            estado.textContent =
+                "No se encontró ningún micrófono disponible.";
+        } else {
+            estado.textContent = "No se pudo iniciar el micrófono.";
+        }
+
         console.error(error);
     }
 };
@@ -115,6 +157,29 @@ detener.onclick = function () {
 /* ============================= */
 
 if (reconocimiento) {
+    function programarReinicio() {
+        if (!escuchando || reinicioReconocimiento !== null) {
+            return;
+        }
+
+        // El navegador puede cerrar la sesión después de un silencio breve.
+        // Esperar evita llamar a start() mientras la sesión anterior termina.
+        reinicioReconocimiento = setTimeout(function () {
+            reinicioReconocimiento = null;
+
+            if (!escuchando) {
+                return;
+            }
+
+            try {
+                reconocimiento.start();
+            } catch (error) {
+                console.error("No se pudo reanudar el reconocimiento:", error);
+                programarReinicio();
+            }
+        }, 300);
+    }
+
     reconocimiento.onresult = function (event) {
         let textoTemporal = "";
 
@@ -138,28 +203,37 @@ if (reconocimiento) {
     reconocimiento.onerror = function (event) {
         console.error("Error de reconocimiento:", event.error);
 
-        estado.textContent =
-            "Error del micrófono: " + event.error;
+        if (event.error === "network") {
+            estado.textContent =
+                "No se pudo conectar al servicio de voz. En Brave, permite el micrófono y desactiva Shields para localhost.";
+        } else if (event.error === "not-allowed" ||
+            event.error === "service-not-allowed") {
+            estado.textContent =
+                "Micrófono bloqueado en Edge. Pulsa el candado de la barra, permite el micrófono y recarga la página.";
+        } else {
+            estado.textContent =
+                "Error del micrófono: " + event.error;
+        }
 
         if (event.error === "not-allowed" ||
-            event.error === "service-not-allowed") {
+            event.error === "service-not-allowed" ||
+            event.error === "audio-capture" ||
+            event.error === "network") {
             escuchando = false;
             guardarAlTerminar = false;
             boton.disabled = false;
             detener.disabled = true;
+            return;
+        }
+
+        if (event.error === "no-speech" || event.error === "aborted") {
+            estado.textContent = "Escuchando... habla para continuar.";
         }
     };
 
     reconocimiento.onend = async function () {
         if (escuchando) {
-            // Algunos navegadores terminan el reconocimiento
-            // automáticamente. Lo reiniciamos mientras siga activo.
-            try {
-                reconocimiento.start();
-            } catch (error) {
-                console.error("No se pudo reanudar:", error);
-            }
-
+            programarReinicio();
             return;
         }
 
@@ -307,6 +381,57 @@ function obtenerCSRFToken() {
     return "";
 }
 
+function escaparHTML(contenido) {
+    const elemento = document.createElement("div");
+    elemento.textContent = contenido;
+    return elemento.innerHTML;
+}
+
+async function solicitarFeedbackCoach() {
+    const transcripcion = texto.value.trim();
+
+    if (!transcripcion) {
+        alert("Escribe o graba una transcripción antes de solicitar feedback.");
+        return;
+    }
+
+    solicitarFeedback.disabled = true;
+    solicitarFeedback.textContent = "Analizando...";
+
+    try {
+        const respuesta = await fetch("/api/ask/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": obtenerCSRFToken()
+            },
+            credentials: "same-origin",
+            body: JSON.stringify({ prompt: transcripcion })
+        });
+
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) {
+            throw new Error(datos.error || "No se pudo obtener el feedback.");
+        }
+
+        contenidoFeedback.innerHTML = escaparHTML(datos.response || "")
+            .replace(/\r?\n/g, "<br>");
+        modalFeedback.style.display = "block";
+    } catch (error) {
+        alert(error.message);
+    } finally {
+        solicitarFeedback.disabled = false;
+        solicitarFeedback.textContent = "Solicitar Feedback del Coach";
+    }
+}
+
+solicitarFeedback.onclick = solicitarFeedbackCoach;
+
+cerrarFeedback.onclick = function () {
+    modalFeedback.style.display = "none";
+};
+
 /* ============================= */
 /* GUARDAR CONVERSACIÓN EN DJANGO */
 /* ============================= */
@@ -365,8 +490,13 @@ async function guardarConversacion(resultados) {
     } catch (error) {
         console.error("Error al guardar:", error);
 
-        estado.textContent =
-            "No se pudo guardar la práctica. " + error.message;
+        if (error instanceof TypeError && error.message === "Failed to fetch") {
+            estado.textContent =
+                "No se pudo conectar con Django. Verifica que el servidor esté ejecutándose y vuelve a intentar guardar.";
+        } else {
+            estado.textContent =
+                "No se pudo guardar la práctica. " + error.message;
+        }
 
     } finally {
         guardando = false;

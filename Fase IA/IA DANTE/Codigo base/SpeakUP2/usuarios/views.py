@@ -1,4 +1,7 @@
 
+import json
+
+from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.hashers import make_password, check_password
 from django.http import JsonResponse
@@ -6,6 +9,7 @@ from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.views.decorators.csrf import ensure_csrf_cookie
+from groq import Groq
 
 from .models import Usuario, Conversacion
 
@@ -253,6 +257,67 @@ def iniciar(request):
 def cerrar_sesion(request):
     request.session.flush()
     return redirect("/login/")
+
+GROQ_SYSTEM_PROMPT = (
+    "Eres un coach experto en oratoria, comunicación persuasiva y pitch hablado "
+    "para SpeakUp. Analiza la transcripción del pitch que envía el usuario y "
+    "entrega feedback accionable en español. Evalúa su estructura (apertura, "
+    "problema o propuesta de valor, evidencias y cierre), claridad, coherencia, "
+    "concisión, tono y capacidad de persuasión. Identifica fortalezas concretas "
+    "y áreas de mejora con ejemplos de la transcripción. Propón una reescritura "
+    "de alto impacto que conserve la intención del usuario y mejore el mensaje. "
+    "Organiza la respuesta en Markdown legible con títulos y listas, evitando "
+    "comentarios genéricos y manteniendo un tono profesional, claro y útil."
+)
+
+
+def ask_groq(request):
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "Método no permitido."},
+            status=405
+        )
+
+    try:
+        datos = json.loads(request.body)
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return JsonResponse(
+            {"error": "Los datos enviados no son válidos."},
+            status=400
+        )
+
+    prompt = datos.get("prompt")
+
+    if not isinstance(prompt, str) or not prompt.strip():
+        return JsonResponse(
+            {"error": "El parámetro 'prompt' es obligatorio."},
+            status=400
+        )
+
+    if not settings.GROQ_API_KEY:
+        return JsonResponse(
+            {"error": "El servicio de feedback no está configurado."},
+            status=503
+        )
+
+    try:
+        cliente = Groq(api_key=settings.GROQ_API_KEY)
+        respuesta = cliente.chat.completions.create(
+            model="openai/gpt-oss-20b",
+            messages=[
+                {"role": "system", "content": GROQ_SYSTEM_PROMPT},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        respuesta_texto = respuesta.choices[0].message.content
+        return JsonResponse({"response": respuesta_texto})
+    except Exception as error:
+        print("Error al consultar Groq:", error)
+        return JsonResponse(
+            {"error": "No se pudo obtener una respuesta del asistente."},
+            status=500
+        )
+
 
 @require_POST
 def eliminar_conversacion(request, conversacion_id):
