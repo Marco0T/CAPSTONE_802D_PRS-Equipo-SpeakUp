@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Entornos virtuales
+venv/
+.venv/
+env/
+
+# Base de datos local
+db.sqlite3
+
+# Variables privadas
+.env
+.env.*
+
+# Archivos temporales
+*.log
+
+# Archivos de VS Code
+.vscode/
+
+# Modelos de IA
+*.gguf
+*.safetensors

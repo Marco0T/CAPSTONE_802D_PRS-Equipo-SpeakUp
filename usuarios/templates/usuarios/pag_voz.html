@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    {% load static %}
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>SpeakUP - Práctica de comunicación oral</title>
+
+    <link
+        rel="stylesheet"
+        href="{% static 'usuarios/Pag1_estilo.css' %}?v=4"
+    >
+
+    <style>
+
+        /* ==========================================
+           CONFIGURACIÓN GENERAL
+        ========================================== */
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #0b1024;
+            color: #f8fafc;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        /* ==========================================
+           ENCABEZADO
+        ========================================== */
+
+        body > header {
+            width: 100%;
+            min-height: 65px;
+            padding: 15px 5%;
+            background: #151d42;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        body > header h2 {
+            margin: 0;
+            font-size: 19px;
+        }
+
+        body > header nav {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+        }
+
+        body > header nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        body > header nav a:hover {
+            color: #a5b4fc;
+        }
+
+        /* ==========================================
+           CONTENEDOR PRINCIPAL
+        ========================================== */
+
+        main {
+            width: 100%;
+            max-width: 1200px;
+            margin: 45px auto;
+            padding: 0 24px;
+        }
+
+        .presentacion {
+            width: 100%;
+            max-width: none;
+            margin: 0;
+            padding: 40px;
+
+            background: #151d42;
+            border: 1px solid #263462;
+            border-radius: 20px;
+
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .titulo-principal {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .titulo-principal h1 {
+            font-size: 32px;
+            margin: 0 0 12px;
+        }
+
+        .titulo-principal p {
+            color: #cbd5e1;
+            font-size: 15px;
+            margin: 0;
+        }
+
+        /* ==========================================
+           SELECCIÓN DE SITUACIÓN
+        ========================================== */
+
+        .situaciones {
+            width: 100%;
+            padding: 22px;
+            margin-bottom: 25px;
+
+            background: #0d1430;
+            border: 1px solid #344477;
+            border-radius: 12px;
+        }
+
+        .situaciones h3 {
+            margin: 0 0 18px;
+            font-size: 17px;
+        }
+
+        .opciones-situacion {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .opcion-situacion {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            padding: 14px 20px;
+            background: #1d2850;
+            border: 1px solid #3d4d82;
+            border-radius: 10px;
+
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .opcion-situacion:hover {
+            background: #293868;
+        }
+
+        .opcion-situacion input {
+            accent-color: #818cf8;
+        }
+
+        /* ==========================================
+           TRANSCRIPCIÓN
+        ========================================== */
+
+        .zona-practica,
+        .zona-transcripcion {
+            width: 100%;
+            max-width: none;
+            display: block;
+        }
+
+        .zona-transcripcion {
+            margin-bottom: 25px;
+        }
+
+        .zona-transcripcion h3 {
+            margin: 0 0 15px;
+            font-size: 18px;
+        }
+
+        #texto {
+            display: block;
+            width: 100%;
+            max-width: none;
+            min-width: 0;
+            height: 300px;
+            min-height: 300px;
+
+            padding: 22px;
+
+            background: #090f25;
+            color: #f8fafc;
+
+            border: 1px solid #43558b;
+            border-radius: 12px;
+
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 17px;
+            font-weight: normal;
+            line-height: 1.8;
+            letter-spacing: 0.2px;
+
+            resize: vertical;
+            outline: none;
+        }
+
+        #texto:focus {
+            border-color: #818cf8;
+        }
+
+        #texto::placeholder {
+            color: #94a3b8;
+        }
+
+        /* ==========================================
+           CONTROLES DEL MICRÓFONO
+        ========================================== */
+
+        .controles-practica {
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            flex-wrap: wrap;
+
+            margin-top: 25px;
+        }
+
+        .controles-practica button {
+            padding: 15px 30px;
+            min-width: 190px;
+
+            border: none;
+            border-radius: 10px;
+
+            color: white;
+            font-size: 15px;
+            font-weight: bold;
+
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        #iniciar {
+            background: #4f46e5;
+        }
+
+        #iniciar:hover:not(:disabled) {
+            background: #6366f1;
+        }
+
+        #detener {
+            background: #dc2626;
+        }
+
+        #detener:hover:not(:disabled) {
+            background: #ef4444;
+        }
+
+        .controles-practica button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        #estado {
+            margin-top: 20px;
+            text-align: center;
+            color: #cbd5e1;
+            font-size: 14px;
+        }
+
+        /* ==========================================
+           VENTANA EMERGENTE
+        ========================================== */
+
+        .modal-resultados {
+            position: fixed;
+            inset: 0;
+
+            z-index: 9999;
+
+            display: none;
+            align-items: center;
+            justify-content: center;
+
+            padding: 20px;
+
+            background: rgba(2, 6, 23, 0.82);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-resultados.activo {
+            display: flex;
+        }
+
+        .modal-contenido {
+            width: 100%;
+            max-width: 680px;
+            max-height: 90vh;
+
+            overflow-y: auto;
+
+            padding: 30px;
+
+            background: #17213e;
+            border: 1px solid #5263a0;
+            border-radius: 18px;
+
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+
+            animation: aparecerModal 0.3s ease-out;
+        }
+
+        @keyframes aparecerModal {
+            from {
+                opacity: 0;
+                transform: translateY(25px) scale(0.97);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-encabezado {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+
+            margin-bottom: 25px;
+        }
+
+        .modal-encabezado h2 {
+            margin: 0;
+            font-size: 23px;
+        }
+
+        .cerrar-modal {
+            background: transparent;
+            color: #cbd5e1;
+
+            border: none;
+            border-radius: 8px;
+
+            font-size: 27px;
+            cursor: pointer;
+        }
+
+        .cerrar-modal:hover {
+            color: white;
+        }
+
+        /* ==========================================
+           ANIMACIÓN DE CARGA
+        ========================================== */
+
+        #carga-ia {
+            text-align: center;
+            padding: 40px 10px;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+
+            margin: 0 auto 20px;
+
+            border: 4px solid #344477;
+            border-top: 4px solid #a5b4fc;
+            border-radius: 50%;
+
+            animation: girar 0.8s linear infinite;
+        }
+
+        @keyframes girar {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        #carga-ia p {
+            color: #cbd5e1;
+            line-height: 1.7;
+        }
+
+        /* ==========================================
+           RESULTADOS
+        ========================================== */
+
+        #contenido-resultados {
+            display: none;
+        }
+
+        .resumen-metricas {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+
+            margin-bottom: 25px;
+        }
+
+        .tarjeta-metrica {
+            padding: 22px;
+
+            text-align: center;
+
+            background: #0d1430;
+            border: 1px solid #35477d;
+            border-radius: 12px;
+        }
+
+        .tarjeta-metrica strong {
+            display: block;
+            margin-bottom: 8px;
+
+            color: #a5b4fc;
+            font-size: 30px;
+        }
+
+        .tarjeta-metrica span {
+            color: #cbd5e1;
+            font-size: 13px;
+        }
+
+        .bloque-resultado {
+            padding: 22px;
+            margin-bottom: 18px;
+
+            background: #0d1430;
+            border: 1px solid #35477d;
+            border-radius: 12px;
+        }
+
+        .bloque-resultado h3 {
+            margin: 0 0 14px;
+            color: #c7d2fe;
+            font-size: 17px;
+        }
+
+        .bloque-resultado p {
+            margin: 0;
+            line-height: 1.8;
+            color: #e2e8f0;
+        }
+
+        #texto-seguimiento-ia {
+            white-space: pre-line;
+        }
+
+        .modal-acciones {
+            margin-top: 25px;
+            text-align: center;
+        }
+
+        #cerrar-resultados {
+            padding: 14px 28px;
+
+            background: #4f46e5;
+            color: white;
+
+            border: none;
+            border-radius: 10px;
+
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        #cerrar-resultados:hover {
+            background: #6366f1;
+        }
+
+        /* ==========================================
+           RESPONSIVE
+        ========================================== */
+
+        @media (max-width: 700px) {
+
+            main {
+                margin: 20px auto;
+                padding: 0 12px;
+            }
+
+            .presentacion {
+                padding: 22px 16px;
+            }
+
+            .titulo-principal h1 {
+                font-size: 25px;
+            }
+
+            #texto {
+                height: 250px;
+                min-height: 250px;
+                font-size: 15px;
+            }
+
+            .modal-contenido {
+                padding: 20px;
+            }
+
+            .modal-encabezado h2 {
+                font-size: 19px;
+            }
+
+            .resumen-metricas {
+                gap: 10px;
+            }
+
+            .tarjeta-metrica {
+                padding: 16px 10px;
+            }
+
+            body > header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            body > header nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <!-- ==========================================
+         ENCABEZADO
+    ========================================== -->
+
+    <header>
+
+        <h2>
+            Bienvenido {{ nombre_usuario }}
+        </h2>
+
+        <nav>
+
+            <a href="/voz/">Inicio</a>
+
+            <a href="/historial/">Mi progreso</a>
+
+            <a href="/cerrar-sesion/">Cerrar sesión</a>
+
+        </nav>
+
+    </header>
+
+
+    <!-- ==========================================
+         CONTENIDO PRINCIPAL
+    ========================================== -->
+
+    <main>
+
+        <section class="presentacion">
+
+            <div class="titulo-principal">
+
+                <h1>Preparador de Pitch</h1>
+
+                <p>
+                    Practica tu comunicación oral y recibe
+                    recomendaciones personalizadas con inteligencia artificial.
+                </p>
+
+            </div>
+
+
+            <!-- SELECCIÓN DE SITUACIÓN -->
+
+            <div class="situaciones">
+
+                <h3>Selecciona tu situación</h3>
+
+                <div class="opciones-situacion">
+
+                    <label class="opcion-situacion">
+
+                        <input
+                            type="radio"
+                            name="situacion"
+                            value="presentacion"
+                            checked
+                        >
+
+                        Presentación
+
+                    </label>
+
+                    <label class="opcion-situacion">
+
+                        <input
+                            type="radio"
+                            name="situacion"
+                            value="entrevista"
+                        >
+
+                        Entrevista laboral
+
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <!-- TRANSCRIPCIÓN -->
+
+            <div class="zona-practica">
+
+                <div class="zona-transcripcion">
+
+                    <h3>Transcripción en tiempo real</h3>
+
+                    <textarea
+                        id="texto"
+                        rows="10"
+                        placeholder="Presiona «Comenzar práctica» y empieza a hablar..."
+                        aria-label="Transcripción de la práctica"
+                        readonly
+                    ></textarea>
+
+                </div>
+
+            </div>
+
+
+            <!-- CONTROLES -->
+
+            <div class="controles-practica">
+
+                <button
+                    id="iniciar"
+                    type="button"
+                >
+                    🎤 Comenzar práctica
+                </button>
+
+                <button
+                    id="detener"
+                    type="button"
+                    disabled
+                >
+                    ⏹ Detener micrófono
+                </button>
+
+            </div>
+
+            <p
+                id="estado"
+                role="status"
+                aria-live="polite"
+            >
+                Presiona «Comenzar práctica» para iniciar.
+            </p>
+
+        </section>
+
+    </main>
+
+
+    <!-- ==========================================
+         VENTANA EMERGENTE DE RESULTADOS
+    ========================================== -->
+
+    <div
+        id="modal-resultados"
+        class="modal-resultados"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="titulo-modal"
+    >
+
+        <div class="modal-contenido">
+
+            <div class="modal-encabezado">
+
+                <h2 id="titulo-modal">
+                    📊 Resultados de tu práctica
+                </h2>
+
+                <button
+                    id="cerrar-modal"
+                    class="cerrar-modal"
+                    type="button"
+                    aria-label="Cerrar resultados"
+                >
+                    &times;
+                </button>
+
+            </div>
+
+
+            <!-- CARGA DE LA IA -->
+
+            <div id="carga-ia">
+
+                <div class="spinner"></div>
+
+                <p>
+                    🤖 SpeakUP está analizando tu práctica
+                    y comparándola con tus conversaciones anteriores...
+                </p>
+
+            </div>
+
+
+            <!-- CONTENIDO DE RESULTADOS -->
+
+            <div id="contenido-resultados">
+
+                <div class="resumen-metricas">
+
+                    <div class="tarjeta-metrica">
+
+                        <strong id="cantidadPalabras">
+                            0
+                        </strong>
+
+                        <span>
+                            Palabras
+                        </span>
+
+                    </div>
+
+                    <div class="tarjeta-metrica">
+
+                        <strong id="relleno">
+                            0
+                        </strong>
+
+                        <span>
+                            Posibles muletillas
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- REPETICIONES -->
+
+                <div class="bloque-resultado">
+
+                    <h3>🔁 Repeticiones consecutivas</h3>
+
+                    <p id="repetidas">
+                        Ninguna
+                    </p>
+
+                </div>
+
+
+                <!-- SEGUIMIENTO DE IA -->
+
+                <div
+                    id="seguimiento-ia"
+                    class="bloque-resultado"
+                >
+
+                    <h3>🤖 Evaluación y consejo de SpeakUP</h3>
+
+                    <p
+                        id="texto-seguimiento-ia"
+                        aria-live="polite"
+                    >
+                        Preparando evaluación...
+                    </p>
+
+                </div>
+
+
+                <!-- CERRAR -->
+
+                <div class="modal-acciones">
+
+                    <button
+                        id="cerrar-resultados"
+                        type="button"
+                    >
+                        Cerrar resultados
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================
+         JAVASCRIPT
+    ========================================== -->
+
+    <script
+        src="{% static 'usuarios/sistema.js' %}?v=4"
+    ></script>
+
+</body>
+
+</html>
