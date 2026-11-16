@@ -10,7 +10,7 @@
 
     <title>SpeakUp</title>
 
-    <link rel="stylesheet" href="{% static 'usuarios/Pag1_estilo.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'usuarios/Pag1_estilo.css' %}?v=10">
 
 </head>
 
@@ -31,17 +31,15 @@
 
     <main>
 
+        <div hidden>{% csrf_token %}</div>
+
         <section class="presentacion">
 
             <h1>Preparador de Pitch</h1>
 
 
-            <button id="iniciar">
+            <button id="accionPractica" type="button">
                 Comenzar práctica
-            </button>
-
-            <button id="detener">
-                Detener micrófono
             </button>
 
 
@@ -50,54 +48,132 @@
             </p>
 
 
+            <!-- MÓDULO DE CÁMARA Y MOVIMIENTO -->
+
+            <div class="modulo-camara" id="moduloCamara">
+
+                <div class="video-marco">
+
+                    <video
+                        id="videoCamara"
+                        autoplay
+                        muted
+                        playsinline
+                    ></video>
+
+                    <div class="video-placeholder" id="placeholderCamara">
+                        La cámara se activará al comenzar la práctica
+                    </div>
+
+                    <div
+                        id="alertaMovimiento"
+                        class="alerta-movimiento"
+                        role="status"
+                        aria-live="polite"
+                    >
+                        <span class="punto-alerta" aria-hidden="true"></span>
+                        Movimiento excesivo detectado
+                    </div>
+
+                </div>
+
+                <p class="camara-estado" id="camaraEstado">
+                    Cámara inactiva
+                </p>
+
+            </div>
+
+
+            <!-- TRANSCRIPCIÓN EN VIVO -->
+
+            <div class="panel-transcripcion" id="panelTranscripcion">
+
+                <div class="transcripcion-cabecera">
+
+                    <h3>Transcripción en vivo</h3>
+
+                    <span
+                        class="transcripcion-estado"
+                        id="transcripcionEstado"
+                    >
+                        En espera
+                    </span>
+
+                </div>
+
+                <div
+                    class="transcripcion-texto"
+                    id="transcripcionTexto"
+                    role="log"
+                    aria-live="polite"
+                >
+                    <span class="transcripcion-vacia">
+                        Aquí verás tus palabras mientras presentas.
+                    </span>
+                </div>
+
+            </div>
+
+
             <!-- ZONA DE PRÁCTICA -->
 
             <div class="zona-practica">
 
-                <!-- TEXTO TRANSCRITO -->
+                <!-- MÉTRICAS EN VIVO -->
 
-                <textarea
-                    id="texto"
-                    rows="8"
-                    placeholder="Aquí aparecerá lo que digas..."
-                ></textarea>
+                <div class="panel-vivo">
 
-                <button id="solicitarFeedback" type="button">
-                    Solicitar Feedback del Coach
-                </button>
+                    <div class="metricas">
 
-                <div id="modalFeedback" role="dialog" aria-modal="true" aria-labelledby="tituloFeedback" style="display: none;">
-                    <div>
-                        <button id="cerrarFeedback" type="button" aria-label="Cerrar feedback">X</button>
-                        <h2 id="tituloFeedback">Feedback del Coach</h2>
-                        <div id="contenidoFeedback"></div>
+                        <div class="metrica">
+                            <span class="metrica-valor" id="tiempoPractica">
+                                00:00
+                            </span>
+                            <span class="metrica-etiqueta">Tiempo</span>
+                        </div>
+
+                        <div class="metrica">
+                            <span class="metrica-valor" id="alertasPractica">
+                                0
+                            </span>
+                            <span class="metrica-etiqueta">
+                                Alertas visuales
+                            </span>
+                        </div>
+
                     </div>
+
+                    <p class="panel-vivo-texto" id="resumenVivo">
+                        La grabación de video no incluye audio;
+                        la transcripción se genera en vivo.
+                    </p>
+
                 </div>
 
 
-                <!-- SITUACIONES -->
+                <!-- TIPO DE PRESENTACIÓN -->
 
                 <div class="situaciones">
 
-                    <h3>Situación</h3>
+                    <h3>Tipo de presentación</h3>
 
                     <label>
                         <input
                             type="radio"
                             name="situacion"
-                            value="presentacion"
+                            value="estudiante"
                             checked
                         >
-                        Presentación
+                        Estudiante
                     </label>
 
                     <label>
                         <input
                             type="radio"
                             name="situacion"
-                            value="entrevista"
+                            value="trabajador"
                         >
-                        Entrevista laboral
+                        Trabajador
                     </label>
 
                 </div>
@@ -105,41 +181,52 @@
             </div>
 
 
-            <!-- RESULTADO DEL ANÁLISIS -->
+            <!-- MODAL DE FEEDBACK -->
 
-            <div id="analisis">
+            <div
+                id="modalFeedback"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="tituloFeedback"
+                style="display: none;"
+            >
+                <div class="modal-contenido">
 
-                <h2>Análisis del Pitch</h2>
+                    <button
+                        id="cerrarFeedback"
+                        type="button"
+                        aria-label="Cerrar feedback"
+                    >
+                        X
+                    </button>
 
-                <p id="cantidadPalabras">
-                    Palabras: 0
-                </p>
+                    <h2 id="tituloFeedback">Feedback del Coach</h2>
 
-                <p id="relleno">
-                    Palabras de relleno: 0
-                </p>
+                    <div
+                        class="reproductor-resultado"
+                        id="reproductorResultado"
+                        hidden
+                    >
 
-                <p id="repetidas">
-                    Palabras repetidas:
-                </p>
+                        <video
+                            id="videoResultado"
+                            controls
+                            playsinline
+                        ></video>
 
-                <p id="recomendacion">
-                    Recomendación:
-                </p>
+                        <a
+                            id="descargarVideo"
+                            class="btn-descarga"
+                            download="practica-speakup.webm"
+                        >
+                            Descargar video sin audio
+                        </a>
 
-            </div>
+                    </div>
 
+                    <div id="contenidoFeedback"></div>
 
-            <!-- CONSEJOS SEGÚN LA SITUACIÓN -->
-
-            <div id="consejos">
-
-                <h2>Consejos</h2>
-
-                <p id="consejoSituacion">
-                    Selecciona una situación para recibir consejos.
-                </p>
-
+                </div>
             </div>
 
         </section>
@@ -147,7 +234,7 @@
     </main>
 
 
-    <script src="{% static 'usuarios/sistema.js' %}"></script>
+    <script src="{% static 'usuarios/sistema.js' %}?v=11"></script>
 
 </body>
 

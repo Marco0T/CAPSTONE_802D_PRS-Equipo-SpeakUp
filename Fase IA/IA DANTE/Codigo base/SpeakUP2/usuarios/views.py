@@ -1,5 +1,6 @@
 
 import json
+import re
 
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
@@ -231,6 +232,178 @@ def historial(request):
     )
 
 
+def limpiar_markdown_feedback(texto):
+    texto = str(texto or "").strip()
+
+    texto = re.sub(r"^\s*(?:[-*+]|\d+[.)])\s+", "", texto)
+    texto = re.sub(r"\*\*(.*?)\*\*", r"\1", texto)
+    texto = re.sub(r"__(.*?)__", r"\1", texto)
+    texto = re.sub(r"`([^`]+)`", r"\1", texto)
+    texto = re.sub(r"^#{1,6}\s*", "", texto)
+
+    return texto.strip()
+
+
+def parsear_filas_feedback(texto):
+    if not texto:
+        return []
+
+    contenido = str(texto).strip()
+
+    if contenido.startswith("[") or contenido.startswith("{"):
+        try:
+            datos = json.loads(contenido)
+            lista = datos if isinstance(datos, list) else datos.get("feedback", [])
+
+            filas = []
+            for item in lista:
+                if not isinstance(item, dict):
+                    continue
+
+                momento = limpiar_markdown_feedback(
+                    item.get("momento")
+                    or item.get("tiempo")
+                    or item.get("time")
+                    or ""
+                )
+                senal = limpiar_markdown_feedback(
+                    item.get("senal")
+                    or item.get("señal")
+                    or item.get("segmento")
+                    or item.get("segment")
+                    or item.get("discurso")
+                    or ""
+                )
+                recomendacion = (
+                    item.get("recomendacion")
+                    or item.get("recommendation")
+                    or item.get("correccion")
+                    or item.get("correction")
+                    or item.get("texto")
+                    or ""
+                )
+
+                segmento = " · ".join(
+                    parte for parte in (momento, senal) if parte
+                ) or "Feedback general"
+
+                if str(recomendacion).strip():
+                    filas.append({
+                        "segmento": segmento,
+                        "recomendacion": limpiar_markdown_feedback(recomendacion)
+                    })
+
+            if filas:
+                return filas
+        except (json.JSONDecodeError, TypeError, ValueError):
+            pass
+
+    filas = []
+    segmento_actual = "Feedback general"
+    buffer = []
+
+    def agregar_fila():
+        recomendacion = " ".join(buffer).strip()
+        if recomendacion:
+            filas.append({
+                "segmento": segmento_actual or "Feedback general",
+                "recomendacion": recomendacion
+            })
+        buffer.clear()
+
+    for linea in contenido.splitlines():
+        linea = linea.strip()
+
+        if not linea or linea.startswith("```"):
+            continue
+
+        if "|" in linea and re.fullmatch(r"\|?[\s:\-|]+\|?", linea):
+            continue
+
+        if "|" in linea:
+            partes = [parte.strip() for parte in linea.split("|") if parte.strip()]
+
+            if len(partes) >= 3:
+                momento = limpiar_markdown_feedback(partes[0])
+                senal = limpiar_markdown_feedback(partes[1])
+                recomendacion = limpiar_markdown_feedback(" ".join(partes[2:]))
+
+                es_encabezado = (
+                    re.search(r"momento|tiempo", momento, re.IGNORECASE)
+                    and re.search(r"se[ñn]al", senal, re.IGNORECASE)
+                )
+
+                if es_encabezado:
+                    continue
+
+                agregar_fila()
+                if recomendacion:
+                    filas.append({
+                        "segmento": " · ".join(
+                            parte for parte in (momento, senal) if parte
+                        ) or "Feedback general",
+                        "recomendacion": recomendacion
+                    })
+                continue
+
+            if len(partes) >= 2:
+                segmento = limpiar_markdown_feedback(partes[0])
+                recomendacion = limpiar_markdown_feedback(" ".join(partes[1:]))
+
+                es_encabezado = (
+                    re.fullmatch(
+                        r"(segmento(\s+del\s+discurso)?|discurso)",
+                        segmento,
+                        re.IGNORECASE
+                    )
+                    and re.search(r"recomendaci[oó]n", recomendacion, re.IGNORECASE)
+                )
+
+                if es_encabezado:
+                    continue
+
+                agregar_fila()
+                if recomendacion:
+                    filas.append({
+                        "segmento": segmento or "Feedback general",
+                        "recomendacion": recomendacion
+                    })
+                continue
+
+        encabezado = re.match(r"^#{1,6}\s+(.+)$", linea)
+        if encabezado:
+            agregar_fila()
+            segmento_actual = limpiar_markdown_feedback(encabezado.group(1))
+            continue
+
+        negrita = re.match(r"^\*\*(.+?)\*\*:?\s*$", linea)
+        if negrita:
+            agregar_fila()
+            segmento_actual = limpiar_markdown_feedback(negrita.group(1))
+            continue
+
+        etiqueta = re.match(r"^([^:]{3,60}):\s+(.+)$", linea)
+        if etiqueta:
+            agregar_fila()
+            filas.append({
+                "segmento": limpiar_markdown_feedback(etiqueta.group(1)),
+                "recomendacion": limpiar_markdown_feedback(etiqueta.group(2))
+            })
+            continue
+
+        buffer.append(limpiar_markdown_feedback(linea))
+
+    agregar_fila()
+
+    if not filas:
+        filas.append({
+            "segmento": "Feedback general",
+            "recomendacion": limpiar_markdown_feedback(contenido)
+        })
+
+    return filas
+
+
 def detalle_conversacion(request, conversacion_id):
     usuario_id = request.session.get("usuario_id")
 
@@ -246,7 +419,15 @@ def detalle_conversacion(request, conversacion_id):
     return render(
         request,
         "usuarios/detalle_conversacion.html",
-        {"conversacion": conversacion}
+        {
+            "conversacion": conversacion,
+            "recomendacion_filas": parsear_filas_feedback(
+                conversacion.recomendacion
+            ),
+            "consejo_filas": parsear_filas_feedback(
+                conversacion.consejo_situacion
+            )
+        }
     )
 
 
@@ -259,15 +440,21 @@ def cerrar_sesion(request):
     return redirect("/login/")
 
 GROQ_SYSTEM_PROMPT = (
-    "Eres un coach experto en oratoria, comunicación persuasiva y pitch hablado "
-    "para SpeakUp. Analiza la transcripción del pitch que envía el usuario y "
-    "entrega feedback accionable en español. Evalúa su estructura (apertura, "
-    "problema o propuesta de valor, evidencias y cierre), claridad, coherencia, "
-    "concisión, tono y capacidad de persuasión. Identifica fortalezas concretas "
-    "y áreas de mejora con ejemplos de la transcripción. Propón una reescritura "
-    "de alto impacto que conserve la intención del usuario y mejore el mensaje. "
-    "Organiza la respuesta en Markdown legible con títulos y listas, evitando "
-    "comentarios genéricos y manteniendo un tono profesional, claro y útil."
+    "Eres un coach experto en lenguaje corporal, presencia escénica y pitch "
+    "para SpeakUp. La práctica se graba SOLO en video, sin audio: analiza "
+    "exclusivamente las señales visuales y el lenguaje corporal. Evalúa "
+    "postura, contacto visual, movimiento de manos, desplazamiento, tensión "
+    "y gestos que transmitan inseguridad. Usa como apoyo los eventos de "
+    "movimiento detectados automáticamente, pero no inventes detalles que no "
+    "puedan deducirse de ellos. "
+    "Devuelve EXCLUSIVAMENTE un objeto JSON válido con esta forma exacta: "
+    "{\"feedback\":[{\"momento\":\"mm:ss\","
+    "\"senal\":\"Señal de inseguridad detectada\","
+    "\"recomendacion\":\"Recomendación accionable del coach\"}]}. "
+    "Incluye entre 3 y 6 filas ordenadas por tiempo, con recomendaciones "
+    "concretas y prácticas. No uses Markdown, tablas, viñetas, bloques de "
+    "código ni texto adicional fuera del JSON. Mantén un tono profesional, "
+    "cercano y útil."
 )
 
 
