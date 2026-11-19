@@ -1,0 +1,180 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Detalle de conversación | SpeakUP</title>
+
+    <link
+        rel="stylesheet"
+        href="{% static 'usuarios/historial.css' %}?v=5"
+    >
+</head>
+
+<body>
+
+    <header class="navbar">
+
+        <h2>SpeakUP</h2>
+
+        <nav class="nav-links">
+            <a href="{% url 'voz' %}">Inicio</a>
+            <a href="{% url 'historial' %}">Mi progreso</a>
+            <a href="{% url 'cerrar_sesion' %}">
+                Cerrar sesión
+            </a>
+        </nav>
+
+    </header>
+
+    <main class="contenedor">
+
+        <h1 class="titulo">Detalle de la práctica</h1>
+
+        <p class="subtitulo">
+            Revisa el resumen y el feedback de tu práctica
+            #{{ conversacion.id }}.
+        </p>
+
+        <section class="panel">
+
+            <h2>Información general</h2>
+
+            <div class="informacion">
+
+                <p>
+                    <strong>Tipo de presentación:</strong>
+                    {{ conversacion.situacion|capfirst }}
+                </p>
+
+                <p>
+                    <strong>Fecha de inicio:</strong>
+                    {{ conversacion.fecha_inicio|date:"d/m/Y H:i:s" }}
+                </p>
+
+                <p>
+                    <strong>Fecha de término:</strong>
+                    {{ conversacion.fecha_fin|date:"d/m/Y H:i:s" }}
+                </p>
+
+            </div>
+
+        </section>
+
+        <section class="panel">
+
+            <h2>Resumen de la práctica</h2>
+
+            <p class="texto">{{ conversacion.transcripcion }}</p>
+
+        </section>
+
+        <section class="panel">
+
+            <h2>Recomendación general</h2>
+
+            {% if recomendacion_filas %}
+
+                <div class="tabla-contenedor">
+
+                    <table class="tabla-feedback">
+
+                        <thead>
+                            <tr>
+                                <th scope="col">Momento y señal detectada</th>
+                                <th scope="col">
+                                    Recomendación del Coach
+                                </th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {% for fila in recomendacion_filas %}
+
+                                <tr>
+                                    <td>{{ fila.segmento }}</td>
+                                    <td>{{ fila.recomendacion|linebreaksbr }}</td>
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            {% else %}
+
+                <p class="texto">
+                    Sin recomendaciones registradas.
+                </p>
+
+            {% endif %}
+
+        </section>
+
+        <section class="panel">
+
+            <h2>Consejo según el tipo de presentación</h2>
+
+            {% if consejo_filas %}
+
+                <div class="tabla-contenedor">
+
+                    <table class="tabla-feedback">
+
+                        <thead>
+                            <tr>
+                                <th scope="col">Aspecto</th>
+                                <th scope="col">
+                                    Consejo del Coach
+                                </th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {% for fila in consejo_filas %}
+
+                                <tr>
+                                    <td>{{ fila.segmento }}</td>
+                                    <td>{{ fila.recomendacion|linebreaksbr }}</td>
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            {% else %}
+
+                <p class="texto">
+                    Sin consejos registrados.
+                </p>
+
+            {% endif %}
+
+        </section>
+
+        <div class="volver">
+
+            <a href="{% url 'historial' %}" class="btn btn-volver">
+                Volver al historial
+            </a>
+
+        </div>
+
+    </main>
+
+</body>
+
+</html>

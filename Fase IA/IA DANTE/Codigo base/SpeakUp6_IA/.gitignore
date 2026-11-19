@@ -14,6 +14,7 @@ db.sqlite3
 # Variables privadas
 .env
 .env.*
+!.env.example
 
 # Archivos temporales
 *.log

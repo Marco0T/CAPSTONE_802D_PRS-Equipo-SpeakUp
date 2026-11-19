@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="es">
+{% load static %}
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Detalle de conversación | SpeakUP</title>
+
+    <link rel="stylesheet" href="{% static 'usuarios/tema.css' %}">
+
+    <style>
+
+        /* ==========================================
+           DETALLE DE PRÁCTICA (tema claro)
+        ========================================== */
+
+        body { padding: 36px 24px 60px; }
+        main { max-width: 940px; margin: auto; }
+
+        h1 { margin: 0 0 8px; font-size: clamp(28px, 4vw, 40px); font-weight: 800; letter-spacing: -.04em; }
+        h2 { margin: 0 0 14px; font-size: 21px; font-weight: 800; }
+        h3 { margin: 0 0 10px; font-size: 17px; font-weight: 700; color: var(--azul); }
+        p { margin: 10px 0; }
+
+        .encabezado { margin-bottom: 26px; }
+        .subtitulo { margin-top: 0; color: var(--texto-suave); }
+
+        /* Tarjetas */
+        section {
+            position: relative;
+            margin: 20px 0;
+            padding: 28px 30px;
+            background: #fff;
+            border: 1px solid var(--borde);
+            border-radius: 24px;
+            box-shadow: var(--sombra-suave);
+        }
+
+        /* Información general */
+        .informacion-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+        .dato { padding: 14px 16px; background: #F3F8FB; border-radius: 16px; }
+        .dato strong { display: block; margin-bottom: 4px; color: var(--azul); font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+        .dato span { display: block; font-size: 16px; font-weight: 600; color: var(--azul-oscuro); overflow-wrap: anywhere; }
+
+        /* Transcripción */
+        .texto { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.8; }
+        .caja-transcripcion { padding: 20px 22px; background: #FBFDFE; border: 1px solid var(--borde); border-radius: 18px; }
+
+        /* Estadísticas */
+        .estadisticas-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
+        .estadistica { padding: 18px 20px; background: #EDF6F0; border-radius: 18px; }
+        .estadisticas-grid .estadistica:nth-child(2n) { background: #EDF6FA; }
+        .estadistica .etiqueta { display: block; margin-bottom: 6px; color: var(--texto-suave); font-size: 13px; font-weight: 600; }
+        .estadistica .valor { display: block; color: var(--azul-oscuro); font: 800 28px var(--fuente-titulo); letter-spacing: -.03em; }
+
+        /* Palabras repetidas */
+        .lista-repeticiones { padding-left: 20px; }
+        .lista-repeticiones li { margin-bottom: 8px; }
+        .lista-repeticiones li::marker { color: var(--verde-acento); }
+
+        /* Estados */
+        .estado { display: inline-block; margin-bottom: 12px; padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+        .estado-completado { background: var(--ok-fondo); color: var(--ok-texto); }
+        .estado-respaldo { background: var(--aviso-fondo); color: var(--aviso-texto); }
+        .estado-sin-datos { background: var(--neutro-fondo); color: var(--neutro-texto); }
+        .estado-camara { background: var(--info-fondo); color: var(--info-texto); }
+
+        /* MediaPipe */
+        .seccion-visual::before, .seccion-ia::before {
+            content: ""; position: absolute; left: 30px; right: 30px; top: 0; height: 4px;
+            border-radius: 0 0 4px 4px;
+        }
+        .seccion-visual::before { background: linear-gradient(90deg, var(--azul-claro), var(--verde-acento)); }
+        .seccion-ia::before { background: linear-gradient(90deg, var(--lila-claro), var(--lila)); }
+        .resumen-visual { margin-top: 10px; color: var(--texto-suave); }
+        .nota-mediapipe { margin-top: 20px; padding: 14px 16px; background: var(--azul-claro); border-radius: 14px; color: var(--azul-oscuro); font-size: 13px; }
+        .separador { margin: 26px 0; border: none; border-top: 1px dashed #D6E2EA; }
+
+        /* Evaluación IA */
+        .contenido-ia { margin-top: 10px; padding: 20px 22px; background: #F7F4FB; border: 1px solid #E6DEF1; border-radius: 18px; }
+        .aviso { margin-top: 12px; padding: 14px 16px; background: var(--amarillo-claro); border-radius: 14px; color: var(--aviso-texto); }
+
+        /* Botones */
+        .acciones { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+        .boton {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-height: 48px; padding: 0 24px; border-radius: 14px;
+            background: var(--azul); color: #fff; font: 700 14px var(--fuente-texto); text-decoration: none;
+            box-shadow: 0 8px 20px rgba(66,109,137,.18);
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+        .boton:hover { transform: translateY(-2px); box-shadow: 0 12px 25px rgba(66,109,137,.26); }
+        .boton-secundario { background: #fff; color: var(--azul-oscuro); border: 1px solid #E2EAF0; box-shadow: none; }
+
+        @media (max-width: 650px) {
+            body { padding: 18px 14px 40px; }
+            section { padding: 22px 18px; border-radius: 20px; }
+            h2 { font-size: 19px; }
+            .informacion-grid, .estadisticas-grid { grid-template-columns: 1fr; }
+            .acciones { flex-direction: column; }
+            .boton { text-align: center; }
+        }
+
+    </style>
+
+    <link rel="stylesheet" href="{% static 'usuarios/ajustes_interfaz.css' %}?v=1">
+
+</head>
+
+<body>
+
+    <main>
+
+        <!-- ========================================
+             ENCABEZADO
+        ======================================== -->
+
+        <div class="encabezado">
+
+            <h1>
+                Detalle de la práctica #{{ conversacion.id }}
+            </h1>
+
+            <p class="subtitulo">
+                Consulta tu transcripción, estadísticas
+                y recomendaciones de comunicación.
+            </p>
+
+        </div>
+
+
+        <!-- ========================================
+             INFORMACIÓN GENERAL
+        ======================================== -->
+
+        <section>
+
+            <h2>📋 Información general</h2>
+
+            <div class="informacion-grid">
+
+                <div class="dato">
+
+                    <strong>
+                        Fecha de inicio
+                    </strong>
+
+                    <span>
+                        {{ conversacion.fecha_inicio|date:"d/m/Y H:i:s" }}
+                    </span>
+
+                </div>
+
+                <div class="dato">
+
+                    <strong>
+                        Fecha de término registrada
+                    </strong>
+
+                    <span>
+                        {{ conversacion.fecha_fin|date:"d/m/Y H:i:s" }}
+                    </span>
+
+                </div>
+
+                <div class="dato">
+
+                    <strong>
+                        Situación
+                    </strong>
+
+                    <span>
+                        {{ conversacion.situacion|capfirst }}
+                    </span>
+
+                </div>
+
+                <div class="dato">
+
+                    <strong>
+                        Identificador
+                    </strong>
+
+                    <span>
+                        Práctica #{{ conversacion.id }}
+                    </span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ========================================
+             ANÁLISIS VERBAL
+        ======================================== -->
+
+        <section>
+
+            <h2>🎤 Análisis de voz</h2>
+
+            <p>
+                Resultados obtenidos a partir de
+                la transcripción de tu práctica.
+            </p>
+
+            <div class="estadisticas-grid">
+
+                <div class="estadistica">
+
+                    <span class="etiqueta">
+                        Total de palabras
+                    </span>
+
+                    <span class="valor">
+                        {{ conversacion.cantidad_palabras }}
+                    </span>
+
+                </div>
+
+                <div class="estadistica">
+
+                    <span class="etiqueta">
+                        Palabras de relleno
+                    </span>
+
+                    <span class="valor">
+                        {{ conversacion.palabras_relleno }}
+                    </span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ========================================
+             TRANSCRIPCIÓN
+        ======================================== -->
+
+        <section>
+
+            <h2>📝 Transcripción completa</h2>
+
+            {% if conversacion.transcripcion %}
+
+                <div class="caja-transcripcion">
+
+                    <p class="texto">
+                        {{ conversacion.transcripcion }}
+                    </p>
+
+                </div>
+
+            {% else %}
+
+                <p>
+                    No hay una transcripción registrada
+                    para esta práctica.
+                </p>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- ========================================
+             PALABRAS REPETIDAS
+        ======================================== -->
+
+        <section>
+
+            <h2>🔁 Palabras repetidas</h2>
+
+            {% if conversacion.palabras_repetidas %}
+
+                <ul class="lista-repeticiones">
+
+                    {% for palabra, cantidad in conversacion.palabras_repetidas.items %}
+
+                        <li>
+
+                            <strong>
+                                {{ palabra }}
+                            </strong>
+
+                            : {{ cantidad }}
+                            repetición(es)
+
+                        </li>
+
+                    {% endfor %}
+
+                </ul>
+
+            {% else %}
+
+                <p>
+                    No hay palabras repetidas registradas.
+                </p>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- ========================================
+             FASE 3 - ANÁLISIS VISUAL
+        ======================================== -->
+
+        <section class="seccion-visual">
+
+            <h2>📷 Análisis visual con MediaPipe</h2>
+
+            {% if conversacion.analisis_visual.fotogramas_analizados %}
+
+                <span class="estado estado-camara">
+                    Cámara utilizada
+                </span>
+
+                <p class="resumen-visual">
+                    Durante esta práctica se recopilaron
+                    estadísticas visuales mediante MediaPipe.
+                </p>
+
+
+                <!-- ================================
+                     PRESENCIA FRENTE A LA CÁMARA
+                ================================ -->
+
+                <hr class="separador">
+
+                <h3>
+                    👤 Presencia frente a la cámara
+                </h3>
+
+                <div class="estadisticas-grid">
+
+                    <div class="estadistica">
+
+                        <span class="etiqueta">
+                            Rostro visible
+                        </span>
+
+                        <span class="valor">
+                            {{ conversacion.analisis_visual.rostro_visible|default_if_none:"Sin datos" }}%
+                        </span>
+
+                    </div>
+
+                    <div class="estadistica">
+
+                        <span class="etiqueta">
+                            Orientación frontal
+                        </span>
+
+                        <span class="valor">
+                            {{ conversacion.analisis_visual.orientacion_frontal|default_if_none:"Sin datos" }}%
+                        </span>
+
+                    </div>
+
+                    <div class="estadistica">
+
+                        <span class="etiqueta">
+                            Orientación hacia la cámara
+                            (estimada)
+                        </span>
+
+                        <span class="valor">
+                            {{ conversacion.analisis_visual.mirada_camara_estimada|default_if_none:"Sin datos" }}%
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ================================
+                     POSTURA CORPORAL
+                ================================ -->
+
+                <hr class="separador">
+
+                <h3>
+                    🧍 Postura corporal
+                </h3>
+
+                <div class="estadisticas-grid">
+
+                    <div class="estadistica">
+
+                        <span class="etiqueta">
+                            Estabilidad corporal aproximada
+                        </span>
+
+                        <span class="valor">
+                            {{ conversacion.analisis_visual.estabilidad_corporal|default_if_none:"Sin datos" }}%
+                        </span>
+
+                    </div>
+
+                    <div class="estadistica">
+
+                        <span class="etiqueta">
+                            Hombros visibles
+                        </span>
+
+                        <span class="valor">
+                            {{ conversacion.analisis_visual.hombros_visibles|default_if_none:"Sin datos" }}%
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ================================
+                     MOVIMIENTOS DE MANOS
+                ================================ -->
+
+                <hr class="separador">
+
+                <h3>
+                    🙌 Movimientos de manos
+                </h3>
+
+                <div class="estadisticas-grid">
+
+                    <div class="estadistica">
+
+                        <span class="etiqueta">
+                            Manos visibles
+                        </span>
+
+                        <span class="valor">
+                            {{ conversacion.analisis_visual.manos_visibles|default_if_none:"Sin datos" }}%
+                        </span>
+
+                    </div>
+
+                    <div class="estadistica">
+
+                        <span class="etiqueta">
+                            Movimientos detectados
+                        </span>
+
+                        <span class="valor">
+                            {{ conversacion.analisis_visual.movimientos_manos|default_if_none:"Sin datos" }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ================================
+                     MOVIMIENTOS DE CABEZA
+                ================================ -->
+
+                <hr class="separador">
+
+                <h3>
+                    🙂 Movimientos de cabeza
+                </h3>
+
+                <div class="estadisticas-grid">
+
+                    <div class="estadistica">
+
+                        <span class="etiqueta">
+                            Inclinaciones detectadas
+                        </span>
+
+                        <span class="valor">
+                            {{ conversacion.analisis_visual.inclinaciones_cabeza|default_if_none:"Sin datos" }}
+                        </span>
+
+                    </div>
+
+                    <div class="estadistica">
+
+                        <span class="etiqueta">
+                            Cambios de orientación
+                        </span>
+
+                        <span class="valor">
+                            {{ conversacion.analisis_visual.cambios_orientacion_cabeza|default_if_none:"Sin datos" }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ================================
+                     FOTOGRAMAS
+                ================================ -->
+
+                <hr class="separador">
+
+                <div class="estadistica">
+
+                    <span class="etiqueta">
+                        Fotogramas analizados
+                    </span>
+
+                    <span class="valor">
+                        {{ conversacion.analisis_visual.fotogramas_analizados }}
+                    </span>
+
+                </div>
+
+
+                <!-- ================================
+                     NOTA DE INTERPRETACIÓN
+                ================================ -->
+
+                <div class="nota-mediapipe">
+
+                    <strong>
+                        Importante:
+                    </strong>
+
+                    <p>
+                        Estas estadísticas son aproximaciones
+                        calculadas mediante detección de puntos
+                        faciales y corporales.
+                    </p>
+
+                    <p>
+                        No permiten determinar emociones,
+                        ansiedad, seguridad personal ni
+                        estados psicológicos.
+                    </p>
+
+                </div>
+
+            {% else %}
+
+                <span class="estado estado-sin-datos">
+                    Sin análisis visual
+                </span>
+
+                <p>
+                    Esta práctica no tiene estadísticas
+                    visuales registradas.
+                </p>
+
+                <p>
+                    Puedes activar la cámara durante
+                    tus próximas prácticas para
+                    incorporar el análisis de postura,
+                    rostro y movimientos.
+                </p>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- ========================================
+             RECOMENDACIÓN GENERAL
+        ======================================== -->
+
+        <section>
+
+            <h2>💡 Recomendación general</h2>
+
+            <p class="texto">
+                {{ conversacion.recomendacion|default:"Sin recomendaciones registradas." }}
+            </p>
+
+        </section>
+
+
+        <!-- ========================================
+             CONSEJO PARA LA SITUACIÓN
+        ======================================== -->
+
+        <section>
+
+            <h2>🎯 Consejo para la situación</h2>
+
+            <p class="texto">
+                {{ conversacion.consejo_situacion|default:"Sin consejos registrados." }}
+            </p>
+
+        </section>
+
+
+        <!-- ========================================
+             FASE 3 - EVALUACIÓN CON QWEN2.5
+        ======================================== -->
+
+        <section class="seccion-ia">
+
+            <h2>
+                🤖 Seguimiento personalizado con IA
+            </h2>
+
+            {% if conversacion.estado_ia == "completado" %}
+
+                <span class="estado estado-completado">
+                    Evaluación completada
+                </span>
+
+                <div class="contenido-ia">
+
+                    <p class="texto">
+                        {{ conversacion.seguimiento_ia }}
+                    </p>
+
+                </div>
+
+            {% elif conversacion.seguimiento_ia %}
+
+                <span class="estado estado-respaldo">
+                    Evaluación de respaldo
+                </span>
+
+                <div class="contenido-ia">
+
+                    <p class="texto">
+                        {{ conversacion.seguimiento_ia }}
+                    </p>
+
+                </div>
+
+                <div class="aviso">
+
+                    <strong>
+                        Aviso:
+                    </strong>
+
+                    <p>
+                        La evaluación de IA local no se
+                        completó. Se muestran las
+                        recomendaciones de respaldo
+                        que quedaron registradas.
+                    </p>
+
+                </div>
+
+            {% elif conversacion.estado_ia == "no_disponible" %}
+
+                <span class="estado estado-sin-datos">
+                    IA no disponible
+                </span>
+
+                <p>
+                    La práctica se guardó, pero no fue
+                    posible obtener la evaluación de Qwen2.5.
+                </p>
+
+                <p>
+                    Comprueba que Ollama esté funcionando
+                    y que el modelo esté instalado.
+                </p>
+
+            {% else %}
+
+                <span class="estado estado-sin-datos">
+                    Sin evaluación disponible
+                </span>
+
+                <p>
+                    Esta práctica todavía no tiene
+                    una evaluación de IA registrada.
+                </p>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- ========================================
+             NAVEGACIÓN
+        ======================================== -->
+
+        <div class="acciones">
+
+            <a
+                href="{% url 'historial' %}"
+                class="boton"
+            >
+                ← Volver al historial
+            </a>
+
+            <a
+                href="{% url 'voz' %}"
+                class="boton boton-secundario"
+            >
+                🎤 Nueva práctica
+            </a>
+
+        </div>
+
+    </main>
+
+</body>
+
+</html>

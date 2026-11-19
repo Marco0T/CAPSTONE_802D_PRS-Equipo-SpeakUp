@@ -1,0 +1,131 @@
+
+:root {
+    --su-tinta: #294E68;
+    --su-azul: #426D89;
+    --su-verde: #77A58F;
+    --su-fondo: #F7FAFC;
+    --su-borde: #E5EDF2;
+}
+
+/* Lenguaje visual compartido */
+body {
+    background-color: var(--su-fondo);
+    color: #405466;
+    font-family: var(--fuente-texto, 'DM Sans', Arial, sans-serif);
+}
+body > header, .navbar {
+    background: rgba(255,255,255,.94);
+    border-bottom: 1px solid var(--su-borde);
+    box-shadow: 0 5px 22px rgba(41,78,104,.035);
+}
+.marca-app { color: var(--su-tinta); }
+.marca-app b { background: linear-gradient(145deg,#DCEEF8,#DCEFE5); color: var(--su-azul); }
+.nav-links a, body > header nav a { transition: color .2s ease, background .2s ease; }
+.nav-links a:hover, body > header nav a:hover { background: #EAF2F4; color: var(--su-tinta); }
+
+/* Tarjetas y superficies */
+.tarjeta, .presentacion, .camara-informacion, section:not(.seccion-camara) {
+    border-color: var(--su-borde);
+}
+.tarjeta, .presentacion { box-shadow: 0 14px 38px rgba(61,91,112,.075); }
+input, textarea, select { font-family: var(--fuente-texto, 'DM Sans', Arial, sans-serif); }
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: #7899AA !important;
+    box-shadow: 0 0 0 4px rgba(66,109,137,.10);
+}
+button, .btn, .boton { transition: transform .2s ease, box-shadow .2s ease, background .2s ease; }
+button:focus-visible, a:focus-visible { outline: 3px solid #C9DFD4; outline-offset: 3px; }
+
+/* Práctica: voz y cámara visibles en paralelo */
+.paneles-practica {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: stretch;
+    gap: 22px;
+    margin-top: 6px;
+}
+.paneles-practica > .zona-practica,
+.paneles-practica > .seccion-camara { min-width: 0; margin: 0; }
+.paneles-practica .zona-transcripcion { height: 100%; margin: 0; }
+.paneles-practica .zona-transcripcion h3 { font-size: 17px; }
+.paneles-practica #texto {
+    height: 340px;
+    min-height: 260px;
+    resize: vertical;
+    padding: 17px;
+    font-size: 15px;
+    line-height: 1.7;
+}
+.paneles-practica .seccion-camara {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(145deg,#F1F7FA,#F1F7F3 72%,#F6F3F9);
+}
+.paneles-practica .camara-encabezado {
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+.paneles-practica .camara-encabezado h3 { font-size: 17px; }
+.paneles-practica .camara-encabezado p { font-size: 12px; line-height: 1.55; }
+.paneles-practica #activar-camara { min-height: 40px; padding: 0 14px; font-size: 12px; }
+.paneles-practica .camara-contenido { grid-template-columns: minmax(0,1fr); gap: 12px; }
+.paneles-practica .contenedor-camara {
+    min-height: 0;
+    aspect-ratio: 16 / 9;
+    border-width: 4px;
+    border-radius: 16px;
+}
+.paneles-practica #camara { width: 100%; height: 100%; min-height: 0; object-fit: cover; }
+.paneles-practica .camara-informacion { padding: 14px; border-radius: 15px; }
+.paneles-practica .camara-informacion h4 { margin-bottom: 9px; font-size: 14px; }
+.paneles-practica #estado-camara { margin-bottom: 9px; padding: 8px 11px; font-size: 12px; }
+.paneles-practica #resultados-camara { min-height: 58px; padding: 10px 12px; font-size: 12px; line-height: 1.65; }
+.paneles-practica .nota-mediapipe { margin-top: 9px; font-size: 10px; line-height: 1.5; }
+.controles-practica { margin-top: 24px; }
+
+/* Historial: jerarquía y lectura */
+.contenedor { max-width: 1080px; }
+.titulo { margin-bottom: 10px; }
+.lista-practicas { gap: 18px; }
+.tarjeta { padding: 28px 30px 28px 34px; }
+.tarjeta h3 { color: var(--su-tinta); }
+.informacion p { background: #F3F7F9; border: 1px solid #EAF0F3; }
+.btn-ver { background: var(--su-azul); }
+.btn-eliminar { border: 1px solid #F0DADA; }
+
+/* Detalle de conversación */
+body:has(.encabezado) main { max-width: 1000px; }
+body:has(.encabezado) section {
+    border-radius: 22px;
+    box-shadow: 0 10px 30px rgba(61,91,112,.055);
+}
+body:has(.encabezado) .dato { background: #F2F7F9; }
+body:has(.encabezado) .estadistica { background: #EAF3F5; }
+body:has(.encabezado) .estadisticas-grid .estadistica:nth-child(2n) { background: #EDF5F0; }
+
+/* Acceso y registro */
+body:has(.formulario) > header { min-height: 78px; }
+body:has(.formulario) main { min-height: calc(100vh - 78px); }
+body:has(.formulario) .presentacion {
+    width: min(100%, 480px);
+    padding: 42px 42px 36px;
+    border-radius: 26px;
+}
+body:has(.formulario) .presentacion h1 { letter-spacing: -.04em; }
+body:has(.formulario) .formulario input { min-height: 47px; }
+body:has(.formulario) .formulario button { min-height: 50px; }
+
+@media (max-width: 900px) {
+    .paneles-practica { grid-template-columns: 1fr; }
+    .paneles-practica #texto { height: 250px; min-height: 220px; }
+    .paneles-practica .seccion-camara { padding: 20px; }
+}
+@media (max-width: 600px) {
+    .paneles-practica { gap: 16px; }
+    .paneles-practica .camara-encabezado { flex-direction: column; }
+    .paneles-practica #activar-camara { width: 100%; }
+    body:has(.formulario) .presentacion { padding: 32px 22px 28px; }
+}

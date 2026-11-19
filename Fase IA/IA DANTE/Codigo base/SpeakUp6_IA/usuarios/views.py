@@ -4,6 +4,7 @@ import math
 import re
 import threading
 
+from django.conf import settings
 from django.db import close_old_connections
 
 from django.shortcuts import render, redirect, get_object_or_404
@@ -16,6 +17,11 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 
 from .models import Usuario, Conversacion
 from .seguimiento_ia import analizar_y_guardar, contar_marcadores
+
+try:
+    from groq import Groq
+except ImportError:  # La app sigue funcionando sin la dependencia instalada.
+    Groq = None
 
 
 logger = logging.getLogger(__name__)
@@ -199,6 +205,281 @@ def voz(request):
                 "usuario_nombre"
             )
         }
+    )
+
+
+# ==================================================
+# PÁGINA DE PRESENTACIÓN (MODO TRASLADADO DE SpeakUP2)
+# ==================================================
+
+@ensure_csrf_cookie
+def voz_presentacion(request):
+
+    if "usuario_id" not in request.session:
+
+        return redirect("/login/")
+
+    return render(
+        request,
+        "usuarios/pag_voz_presentacion.html",
+        {
+            "nombre_usuario": request.session.get(
+                "usuario_nombre"
+            )
+        }
+    )
+
+
+# ==================================================
+# FEEDBACK CON GROQ (MODO PRESENTACIÓN)
+# ==================================================
+
+GROQ_SYSTEM_PROMPT_PRESENTACION = (
+    "Eres un coach experto en lenguaje corporal, presencia escénica y pitch "
+    "para SpeakUp. La práctica se graba SOLO en video, sin audio: analiza "
+    "exclusivamente las señales visuales y el lenguaje corporal. Evalúa "
+    "postura, contacto visual, movimiento de manos, desplazamiento, tensión "
+    "y gestos que transmitan inseguridad. Usa como apoyo los eventos de "
+    "movimiento detectados automáticamente, pero no inventes detalles que no "
+    "puedan deducirse de ellos. "
+    "Devuelve EXCLUSIVAMENTE un objeto JSON válido con esta forma exacta: "
+    "{\"feedback\":[{\"momento\":\"mm:ss\","
+    "\"senal\":\"Señal de inseguridad detectada\","
+    "\"recomendacion\":\"Recomendación accionable del coach\"}]}. "
+    "Incluye entre 3 y 6 filas ordenadas por tiempo, con recomendaciones "
+    "concretas y prácticas. No uses Markdown, tablas, viñetas, bloques de "
+    "código ni texto adicional fuera del JSON. Mantén un tono profesional, "
+    "cercano y útil."
+)
+
+
+def ask_groq_presentacion(request):
+    """Consulta independiente a Groq para el modo presentación."""
+
+    if request.method != "POST":
+
+        return JsonResponse(
+            {"error": "Método no permitido."},
+            status=405
+        )
+
+    try:
+
+        datos = json.loads(request.body)
+
+    except (
+        json.JSONDecodeError,
+        UnicodeDecodeError
+    ):
+
+        return JsonResponse(
+            {"error": "Los datos enviados no son válidos."},
+            status=400
+        )
+
+    prompt = datos.get("prompt") if isinstance(datos, dict) else None
+
+    if not isinstance(prompt, str) or not prompt.strip():
+
+        return JsonResponse(
+            {"error": "El parámetro 'prompt' es obligatorio."},
+            status=400
+        )
+
+    if Groq is None or not settings.GROQ_API_KEY:
+
+        return JsonResponse(
+            {"error": "El servicio de feedback no está configurado."},
+            status=503
+        )
+
+    try:
+
+        cliente = Groq(api_key=settings.GROQ_API_KEY)
+
+        respuesta = cliente.chat.completions.create(
+            model="openai/gpt-oss-20b",
+            messages=[
+                {
+                    "role": "system",
+                    "content": GROQ_SYSTEM_PROMPT_PRESENTACION
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
+        )
+
+        respuesta_texto = respuesta.choices[0].message.content
+
+        return JsonResponse({"response": respuesta_texto})
+
+    except Exception:
+
+        logger.exception("Error al consultar Groq en modo presentación.")
+
+        return JsonResponse(
+            {"error": "No se pudo obtener una respuesta del asistente."},
+            status=500
+        )
+
+
+# ==================================================
+# GUARDAR CONVERSACIÓN DEL MODO PRESENTACIÓN
+# ==================================================
+
+@require_POST
+def guardar_conversacion_presentacion(request):
+    """
+    Guarda una práctica del modo presentación.
+
+    Esta ruta es independiente de guardar_conversacion: no inicia
+    el análisis local de Qwen2.5 que utiliza la página /voz/.
+    El feedback del coach ya viene calculado con Groq desde el navegador.
+    """
+
+    usuario_id = request.session.get("usuario_id")
+
+    if not usuario_id:
+
+        return JsonResponse(
+            {"error": "Debes iniciar sesión."},
+            status=401
+        )
+
+    try:
+
+        usuario = Usuario.objects.get(id=usuario_id)
+
+    except Usuario.DoesNotExist:
+
+        request.session.flush()
+
+        return JsonResponse(
+            {"error": "La sesión de usuario ya no es válida."},
+            status=401
+        )
+
+    try:
+
+        datos = json.loads(request.body)
+
+    except (
+        json.JSONDecodeError,
+        UnicodeDecodeError
+    ):
+
+        return JsonResponse(
+            {"error": "Los datos enviados no son válidos."},
+            status=400
+        )
+
+    if not isinstance(datos, dict):
+
+        return JsonResponse(
+            {"error": "El formato de los datos no es válido."},
+            status=400
+        )
+
+    transcripcion = datos.get("transcripcion", "")
+
+    if not isinstance(transcripcion, str):
+
+        return JsonResponse(
+            {"error": "La transcripción debe ser texto."},
+            status=400
+        )
+
+    transcripcion = transcripcion.strip()
+
+    if not transcripcion:
+
+        return JsonResponse(
+            {"error": "No se puede guardar una práctica vacía."},
+            status=400
+        )
+
+    palabras_repetidas = datos.get("palabras_repetidas", {})
+
+    if not isinstance(palabras_repetidas, dict):
+
+        palabras_repetidas = {}
+
+    fecha_inicio_texto = datos.get("fecha_inicio")
+    fecha_inicio = None
+
+    if isinstance(fecha_inicio_texto, str):
+
+        fecha_inicio = parse_datetime(fecha_inicio_texto)
+
+    if fecha_inicio is None:
+
+        fecha_inicio = timezone.now()
+
+    elif timezone.is_naive(fecha_inicio):
+
+        fecha_inicio = timezone.make_aware(
+            fecha_inicio,
+            timezone.get_current_timezone()
+        )
+
+    ahora = timezone.now()
+
+    if fecha_inicio > ahora:
+
+        fecha_inicio = ahora
+
+    situacion = datos.get("situacion", "presentacion")
+
+    if situacion not in (
+        "estudiante",
+        "trabajador",
+        "presentacion"
+    ):
+
+        situacion = "presentacion"
+
+    palabras_relleno = datos.get("palabras_relleno", 0)
+
+    if not isinstance(palabras_relleno, int) or palabras_relleno < 0:
+
+        palabras_relleno = 0
+
+    recomendacion = datos.get("recomendacion", "")
+
+    if not isinstance(recomendacion, str):
+
+        recomendacion = ""
+
+    recomendacion = recomendacion.strip()
+
+    consejo_situacion = datos.get("consejo_situacion", "")
+
+    if not isinstance(consejo_situacion, str):
+
+        consejo_situacion = ""
+
+    conversacion = Conversacion.objects.create(
+        usuario=usuario,
+        fecha_inicio=fecha_inicio,
+        situacion=situacion,
+        transcripcion=transcripcion,
+        cantidad_palabras=contar_palabras(transcripcion),
+        palabras_relleno=palabras_relleno,
+        palabras_repetidas=palabras_repetidas,
+        recomendacion=recomendacion,
+        consejo_situacion=consejo_situacion,
+        seguimiento_ia=recomendacion,
+        estado_ia="completado" if recomendacion else "no_disponible"
+    )
+
+    return JsonResponse(
+        {
+            "mensaje": "Conversación guardada correctamente.",
+            "conversacion_id": conversacion.id
+        },
+        status=201
     )
 
 

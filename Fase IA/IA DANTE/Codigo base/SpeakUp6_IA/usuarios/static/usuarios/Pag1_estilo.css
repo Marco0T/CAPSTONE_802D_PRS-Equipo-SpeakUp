@@ -93,6 +93,12 @@ main { width: 100%; max-width: 1120px; margin: 40px auto 60px; padding: 0 24px; 
     box-shadow: 0 6px 18px var(--acento-sombra);
 }
 .opcion-situacion input { width: 18px; height: 18px; accent-color: var(--acento); cursor: pointer; }
+.descripcion-modo { margin: 0 0 16px; color: var(--texto-suave); font-size: 14px; line-height: 1.7; }
+.boton-cambio-modo {
+    font-family: var(--fuente-texto);
+    font-size: 15px;
+    line-height: 1.2;
+}
 
 /* ---------- Transcripción ---------- */
 .zona-practica, .zona-transcripcion { width: 100%; display: block; }

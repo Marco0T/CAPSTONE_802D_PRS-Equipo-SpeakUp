@@ -21,7 +21,7 @@
     ========================================== -->
 
     <link rel="stylesheet" href="{% static 'usuarios/tema.css' %}?v=1">
-    <link rel="stylesheet" href="{% static 'usuarios/Pag1_estilo.css' %}?v=13">
+    <link rel="stylesheet" href="{% static 'usuarios/Pag1_estilo.css' %}?v=14">
     <link rel="stylesheet" href="{% static 'usuarios/ajustes_interfaz.css' %}?v=1">
     <!-- Los estilos de esta pantalla están en Pag1_estilo.css (y tema.css) -->
 
@@ -94,35 +94,42 @@
             <div class="situaciones">
 
                 <h3>
-                    Selecciona tu situación
+                    Entrevista laboral
                 </h3>
+
+                <p class="descripcion-modo">
+
+                    Practica tus respuestas de entrevista
+                    y recibe una evaluación personalizada.
+                    Si quieres ensayar una presentación,
+                    cambia de modo con el botón.
+
+                </p>
+
+                <!--
+                    La IA de esta página sigue trabajando en
+                    modo entrevista. El control se mantiene
+                    oculto para no alterar el funcionamiento
+                    original del reconocimiento de voz.
+                -->
+
+                <input
+                    type="radio"
+                    name="situacion"
+                    value="entrevista"
+                    checked
+                    hidden
+                >
 
                 <div class="opciones-situacion">
 
-                    <label class="opcion-situacion">
-
-                        <input
-                            type="radio"
-                            name="situacion"
-                            value="presentacion"
-                            checked
-                        >
-
+                    <button
+                        type="button"
+                        class="opcion-situacion boton-cambio-modo"
+                        onclick="window.location.href='{% url 'voz_presentacion' %}'"
+                    >
                         Presentación
-
-                    </label>
-
-                    <label class="opcion-situacion">
-
-                        <input
-                            type="radio"
-                            name="situacion"
-                            value="entrevista"
-                        >
-
-                        Entrevista laboral
-
-                    </label>
+                    </button>
 
                 </div>
 
