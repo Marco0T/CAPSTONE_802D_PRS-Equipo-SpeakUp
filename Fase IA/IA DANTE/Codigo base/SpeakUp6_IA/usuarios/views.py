@@ -253,6 +253,23 @@ GROQ_SYSTEM_PROMPT_PRESENTACION = (
 )
 
 
+GROQ_SYSTEM_PROMPT_TRANSCRIPCION_PRESENTACION = (
+    "Eres un coach experto en comunicación oral y discurso para SpeakUp. "
+    "Analiza EXCLUSIVAMENTE la transcripción del discurso: claridad, "
+    "estructura, contenido, coherencia, muletillas, repeticiones y cierre. "
+    "No evalúes lenguaje corporal ni inventes información que no aparezca "
+    "en la transcripción. "
+    "Devuelve EXCLUSIVAMENTE un objeto JSON válido con esta forma exacta: "
+    "{\"feedback\":[{\"momento\":\"Aspecto\","
+    "\"senal\":\"Observación del discurso\","
+    "\"recomendacion\":\"Recomendación accionable del coach\"}]}. "
+    "Incluye entre 3 y 6 filas. En 'momento' usa aspectos breves como "
+    "Contenido, Claridad, Estructura, Muletillas o Cierre. No uses Markdown, "
+    "tablas, viñetas, bloques de código ni texto adicional fuera del JSON. "
+    "Mantén un tono profesional, cercano y útil."
+)
+
+
 def ask_groq_presentacion(request):
     """Consulta independiente a Groq para el modo presentación."""
 
@@ -293,6 +310,16 @@ def ask_groq_presentacion(request):
             status=503
         )
 
+    tipo_feedback = datos.get("tipo", "movimientos")
+
+    if tipo_feedback == "transcripcion":
+
+        system_prompt = GROQ_SYSTEM_PROMPT_TRANSCRIPCION_PRESENTACION
+
+    else:
+
+        system_prompt = GROQ_SYSTEM_PROMPT_PRESENTACION
+
     try:
 
         cliente = Groq(api_key=settings.GROQ_API_KEY)
@@ -302,7 +329,7 @@ def ask_groq_presentacion(request):
             messages=[
                 {
                     "role": "system",
-                    "content": GROQ_SYSTEM_PROMPT_PRESENTACION
+                    "content": system_prompt
                 },
                 {
                     "role": "user",

@@ -8,6 +8,12 @@ const estado = document.getElementById("estado");
 const modalFeedback = document.getElementById("modalFeedback");
 const cerrarFeedback = document.getElementById("cerrarFeedback");
 const contenidoFeedback = document.getElementById("contenidoFeedback");
+const contenidoFeedbackTranscripcion = document.getElementById(
+    "contenidoFeedbackTranscripcion"
+);
+
+const switchCamara = document.getElementById("switchCamara");
+const switchCamaraAyuda = document.getElementById("switchCamaraAyuda");
 
 const reproductorResultado = document.getElementById("reproductorResultado");
 const videoResultado = document.getElementById("videoResultado");
@@ -48,6 +54,8 @@ let intervaloReloj = null;
 let eventosCorporales = [];
 let ultimoEventoMs = 0;
 
+let camaraUtilizadaEnPractica = false;
+
 let reconocimientoVoz = null;
 let transcripcionActiva = false;
 let transcripcionFinal = "";
@@ -86,6 +94,12 @@ const COLUMNAS_FEEDBACK = [
     "Recomendación del Coach"
 ];
 
+const COLUMNAS_FEEDBACK_TRANSCRIPCION = [
+    "Aspecto",
+    "Observación",
+    "Recomendación del Coach"
+];
+
 /* ============================= */
 /* UTILIDADES */
 /* ============================= */
@@ -99,6 +113,41 @@ function obtenerSituacion() {
 
     return "estudiante";
 }
+
+function actualizarTemaTipoPresentacion() {
+    const trabajador = obtenerSituacion() === "trabajador";
+
+    document.body.classList.toggle("modo-trabajador", trabajador);
+    document.documentElement.dataset.modoSpeakup =
+        trabajador ? "trabajador" : "estudiante";
+}
+
+for (const opcion of situaciones) {
+    opcion.addEventListener("change", actualizarTemaTipoPresentacion);
+}
+
+actualizarTemaTipoPresentacion();
+
+function camaraSeleccionada() {
+    return !switchCamara || switchCamara.checked;
+}
+
+function actualizarAyudaSwitch() {
+    if (!switchCamaraAyuda) {
+        return;
+    }
+
+    switchCamaraAyuda.textContent = camaraSeleccionada()
+        ? "La cámara analizará tu lenguaje corporal. " +
+          "Si la desactivas, solo se evaluará tu transcripción."
+        : "Modo sin cámara: se evaluará únicamente tu transcripción.";
+}
+
+if (switchCamara) {
+    switchCamara.addEventListener("change", actualizarAyudaSwitch);
+}
+
+actualizarAyudaSwitch();
 
 function obtenerCSRFToken() {
     const cookies = document.cookie.split(";");
@@ -182,16 +231,53 @@ function limpiarMarkdownFeedback(texto) {
 /* MODAL DE FEEDBACK */
 /* ============================= */
 
-function abrirModalFeedback(mensaje) {
-    contenidoFeedback.innerHTML = "";
+function mostrarCargandoFeedback(contenedor, mensaje) {
+    if (!contenedor) {
+        return;
+    }
+
+    contenedor.innerHTML = "";
 
     const cargando = document.createElement("p");
     cargando.className = "feedback-cargando";
     cargando.textContent = mensaje;
 
-    contenidoFeedback.appendChild(cargando);
+    contenedor.appendChild(cargando);
+}
+
+function abrirModalFeedback(mensajeMovimientos, mensajeTranscripcion) {
+    mostrarCargandoFeedback(contenidoFeedback, mensajeMovimientos);
+    mostrarCargandoFeedback(
+        contenidoFeedbackTranscripcion,
+        mensajeTranscripcion || "Analizando tu transcripción..."
+    );
 
     modalFeedback.style.display = "flex";
+}
+
+function mostrarAvisoFeedback(contenedor, mensaje) {
+    if (!contenedor) {
+        return;
+    }
+
+    contenedor.innerHTML = "";
+
+    const aviso = document.createElement("p");
+    aviso.className = "feedback-cargando";
+    aviso.textContent = mensaje;
+
+    contenedor.appendChild(aviso);
+}
+
+function mostrarTablaFeedback(contenedor, filas, columnas) {
+    if (!contenedor) {
+        return;
+    }
+
+    contenedor.innerHTML = "";
+    contenedor.appendChild(
+        crearTablaFeedbackCorporal(filas, columnas)
+    );
 }
 
 function cerrarModalFeedback() {
@@ -826,8 +912,13 @@ function restablecerBoton() {
     botonAccion.disabled = false;
     botonAccion.textContent = "Comenzar práctica";
 
-    resumenVivo.textContent =
-        "La grabación de video no incluye audio; la transcripción se genera en vivo.";
+    if (switchCamara) {
+        switchCamara.disabled = false;
+    }
+
+    resumenVivo.textContent = camaraSeleccionada()
+        ? "La grabación de video no incluye audio; la transcripción se genera en vivo."
+        : "Modo sin cámara: la transcripción se genera en vivo.";
 }
 
 /* ============================= */
@@ -839,22 +930,27 @@ async function comenzarPractica() {
         return;
     }
 
-    if (!navigator.mediaDevices ||
-        !navigator.mediaDevices.getUserMedia) {
-        estado.textContent =
-            "Este navegador no permite acceder a la cámara.";
-        return;
-    }
+    const conCamara = camaraSeleccionada();
 
-    if (typeof MediaRecorder === "undefined") {
-        estado.textContent =
-            "Este navegador no permite grabar video.";
-        return;
+    if (conCamara) {
+        if (!navigator.mediaDevices ||
+            !navigator.mediaDevices.getUserMedia) {
+            estado.textContent =
+                "Este navegador no permite acceder a la cámara.";
+            return;
+        }
+
+        if (typeof MediaRecorder === "undefined") {
+            estado.textContent =
+                "Este navegador no permite grabar video.";
+            return;
+        }
     }
 
     camaraIniciando = true;
     finalizando = false;
     guardando = false;
+    camaraUtilizadaEnPractica = conCamara;
 
     limpiarVideoResultado();
     detenerCamara();
@@ -868,45 +964,65 @@ async function comenzarPractica() {
     actualizarMetricas();
     tiempoPracticaEl.textContent = "00:00";
     alertasPracticaEl.textContent = "0";
-    resumenVivo.textContent =
-        "Analizando tu lenguaje corporal en tiempo real.";
+
+    if (switchCamara) {
+        switchCamara.disabled = true;
+    }
 
     botonAccion.disabled = true;
-    estado.textContent = "Solicitando acceso a la cámara...";
 
     try {
-        const flujo = await navigator.mediaDevices.getUserMedia({
-            audio: false,
-            video: {
-                facingMode: "user",
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            }
-        });
+        if (conCamara) {
+            resumenVivo.textContent =
+                "Analizando tu lenguaje corporal en tiempo real.";
+            estado.textContent = "Solicitando acceso a la cámara...";
 
-        // Garantía adicional: el stream no debe llevar audio.
-        flujo.getAudioTracks().forEach(function (pista) {
-            flujo.removeTrack(pista);
-            pista.stop();
-        });
+            const flujo = await navigator.mediaDevices.getUserMedia({
+                audio: false,
+                video: {
+                    facingMode: "user",
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                }
+            });
 
-        flujoCamara = flujo;
+            // Garantía adicional: el stream no debe llevar audio.
+            flujo.getAudioTracks().forEach(function (pista) {
+                flujo.removeTrack(pista);
+                pista.stop();
+            });
 
-        videoCamara.srcObject = flujoCamara;
-        await videoCamara.play();
+            flujoCamara = flujo;
 
-        moduloCamara.classList.add("activa");
-        camaraEstado.textContent =
-            "Cámara activa · grabando video sin audio";
+            videoCamara.srcObject = flujoCamara;
+            await videoCamara.play();
 
-        placeholderCamara.textContent =
-            "Grabando tu lenguaje corporal...";
+            moduloCamara.classList.add("activa");
+            camaraEstado.textContent =
+                "Cámara activa · grabando video sin audio";
+
+            placeholderCamara.textContent =
+                "Grabando tu lenguaje corporal...";
+        } else {
+            resumenVivo.textContent =
+                "Modo sin cámara: analizando tu transcripción.";
+            estado.textContent = "Preparando la transcripción...";
+
+            moduloCamara.classList.remove("activa");
+            camaraEstado.textContent =
+                "Cámara desactivada para esta práctica.";
+            placeholderCamara.textContent =
+                "Práctica sin cámara";
+        }
 
         fechaInicio = new Date();
         practicando = true;
 
-        iniciarGrabadoraVideo(flujoCamara);
-        iniciarDeteccionMovimiento();
+        if (conCamara) {
+            iniciarGrabadoraVideo(flujoCamara);
+            iniciarDeteccionMovimiento();
+        }
+
         iniciarReloj();
         iniciarTranscripcionVoz();
 
@@ -915,7 +1031,9 @@ async function comenzarPractica() {
         botonAccion.disabled = false;
         botonAccion.textContent = "Terminar práctica";
 
-        estado.textContent = "Grabando video sin audio...";
+        estado.textContent = conCamara
+            ? "Grabando video sin audio..."
+            : "Grabando tu voz para la transcripción...";
     } catch (error) {
         console.error("Error de cámara:", error);
 
@@ -976,33 +1094,67 @@ async function terminarPractica() {
         )
         : 0;
 
+    const conCamara = camaraUtilizadaEnPractica;
+
     tiempoPracticaEl.textContent = formatearTiempo(duracion);
 
-    estado.textContent = "Preparando tu video...";
-    resumenVivo.textContent = "Procesando el análisis visual de tu práctica...";
+    let blob = null;
 
-    const blob = await detenerGrabadoraVideo();
+    if (conCamara) {
+        estado.textContent = "Preparando tu video...";
+        resumenVivo.textContent =
+            "Procesando el análisis visual de tu práctica...";
+
+        blob = await detenerGrabadoraVideo();
+    } else {
+        estado.textContent = "Preparando el feedback de tu transcripción...";
+        resumenVivo.textContent =
+            "Procesando el análisis de tu discurso...";
+    }
 
     detenerCamara();
 
     if (blob) {
         mostrarVideoResultado(blob);
-        estado.textContent = "Video listo. Analizando tu lenguaje corporal...";
+        estado.textContent = "Video listo. Analizando tu práctica...";
     } else {
         limpiarVideoResultado();
-        estado.textContent =
-            "No se pudo generar el video de la práctica.";
+
+        estado.textContent = conCamara
+            ? "No se pudo generar el video. Analizando tu práctica..."
+            : "Analizando tu transcripción...";
     }
 
     abrirModalFeedback(
-        blob
-            ? "Analizando tu lenguaje corporal..."
-            : "No se pudo generar el video. Analizando la práctica..."
+        conCamara
+            ? (blob
+                ? "Analizando tu lenguaje corporal..."
+                : "No se pudo generar el video. Analizando tu lenguaje corporal...")
+            : "La cámara no se utilizó en esta práctica.",
+        "Analizando tu transcripción..."
     );
 
-    const filas = await solicitarFeedbackCorporal(duracion);
+    const promesaMovimientos = conCamara
+        ? solicitarFeedbackMovimientos(duracion)
+        : Promise.resolve([]);
 
-    await guardarConversacionCorporal(duracion, filas);
+    const [filasMovimientos, filasTranscripcion] = await Promise.all([
+        promesaMovimientos,
+        solicitarFeedbackTranscripcion(duracion)
+    ]);
+
+    if (!conCamara) {
+        mostrarAvisoFeedback(
+            contenidoFeedback,
+            "La cámara no se activó en esta práctica, por lo que no hay feedback de lenguaje corporal."
+        );
+    }
+
+    await guardarConversacionPresentacion(
+        duracion,
+        filasMovimientos,
+        filasTranscripcion
+    );
 
     finalizando = false;
 
@@ -1245,14 +1397,17 @@ function crearCeldaTiempo(momento) {
     return celda;
 }
 
-function crearTablaFeedbackCorporal(filas) {
+function crearTablaFeedbackCorporal(
+    filas,
+    columnas = COLUMNAS_FEEDBACK
+) {
     const tabla = document.createElement("table");
     tabla.className = "tabla-feedback tabla-corporal";
 
     const thead = document.createElement("thead");
     const filaEncabezado = document.createElement("tr");
 
-    for (const columna of COLUMNAS_FEEDBACK) {
+    for (const columna of columnas) {
         const th = document.createElement("th");
         th.scope = "col";
         th.textContent = columna;
@@ -1324,7 +1479,30 @@ function construirPromptCorporal(duracion, tipo) {
     ].join(" ");
 }
 
-async function solicitarFeedbackCorporal(duracion) {
+function construirPromptTranscripcion(duracion, tipo) {
+    const tipoTexto = tipo === "trabajador" ? "Trabajador" : "Estudiante";
+    const textoTranscrito = obtenerTextoTranscrito();
+
+    return [
+        "Tipo de presentación: " + tipoTexto + ".",
+        "Duración de la práctica: " + formatearTiempo(duracion) +
+            " (" + duracion + " segundos).",
+        "Analiza exclusivamente la transcripción del discurso:",
+        "claridad, estructura, contenido, muletillas, repeticiones,",
+        "coherencia y cierre. No evalúes lenguaje corporal.",
+        "Transcripción:",
+        textoTranscrito || "(sin transcripción disponible)",
+        "Devuelve EXCLUSIVAMENTE un objeto JSON válido con esta forma exacta:",
+        '{"feedback":[{"momento":"Aspecto",' +
+            '"senal":"Observación del discurso",' +
+            '"recomendacion":"Recomendación accionable del coach"}]}.',
+        "Incluye entre 3 y 6 filas. En 'momento' usa aspectos breves",
+        "como Contenido, Claridad, Estructura, Muletillas o Cierre.",
+        "No uses Markdown, tablas, viñetas ni texto adicional fuera del JSON."
+    ].join(" ");
+}
+
+async function solicitarFeedbackMovimientos(duracion) {
     const tipo = obtenerSituacion();
     const prompt = construirPromptCorporal(duracion, tipo);
 
@@ -1336,7 +1514,10 @@ async function solicitarFeedbackCorporal(duracion) {
                 "X-CSRFToken": obtenerCSRFToken()
             },
             credentials: "same-origin",
-            body: JSON.stringify({ prompt: prompt })
+            body: JSON.stringify({
+                prompt: prompt,
+                tipo: "movimientos"
+            })
         });
 
         const datos = await respuesta.json();
@@ -1355,9 +1536,10 @@ async function solicitarFeedbackCorporal(duracion) {
             );
         }
 
-        contenidoFeedback.innerHTML = "";
-        contenidoFeedback.appendChild(
-            crearTablaFeedbackCorporal(filas)
+        mostrarTablaFeedback(
+            contenidoFeedback,
+            filas,
+            COLUMNAS_FEEDBACK
         );
 
         return filas;
@@ -1368,9 +1550,79 @@ async function solicitarFeedbackCorporal(duracion) {
             recomendacion: error.message
         }];
 
-        contenidoFeedback.innerHTML = "";
-        contenidoFeedback.appendChild(
-            crearTablaFeedbackCorporal(filas)
+        mostrarTablaFeedback(
+            contenidoFeedback,
+            filas,
+            COLUMNAS_FEEDBACK
+        );
+
+        return filas;
+    }
+}
+
+async function solicitarFeedbackTranscripcion(duracion) {
+    const tipo = obtenerSituacion();
+    const textoTranscrito = obtenerTextoTranscrito();
+
+    if (!textoTranscrito) {
+        mostrarAvisoFeedback(
+            contenidoFeedbackTranscripcion,
+            "No se registró una transcripción para esta práctica."
+        );
+
+        return [];
+    }
+
+    const prompt = construirPromptTranscripcion(duracion, tipo);
+
+    try {
+        const respuesta = await fetch("/api/ask-presentacion/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": obtenerCSRFToken()
+            },
+            credentials: "same-origin",
+            body: JSON.stringify({
+                prompt: prompt,
+                tipo: "transcripcion"
+            })
+        });
+
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) {
+            throw new Error(
+                datos.error || "No se pudo obtener el feedback."
+            );
+        }
+
+        const filas = parsearFeedbackCorporal(datos.response || "");
+
+        if (!filas.length) {
+            throw new Error(
+                "No se recibió feedback para esta práctica."
+            );
+        }
+
+        mostrarTablaFeedback(
+            contenidoFeedbackTranscripcion,
+            filas,
+            COLUMNAS_FEEDBACK_TRANSCRIPCION
+        );
+
+        return filas;
+    } catch (error) {
+        const filas = [{
+            momento: "General",
+            senal: "Análisis no disponible",
+            recomendacion: error.message
+        }];
+
+        mostrarTablaFeedback(
+            contenidoFeedbackTranscripcion,
+            filas,
+            COLUMNAS_FEEDBACK_TRANSCRIPCION
         );
 
         return filas;
@@ -1386,10 +1638,18 @@ function construirResumen(duracion) {
     const tipoTexto = tipo === "trabajador" ? "Trabajador" : "Estudiante";
 
     const partes = [
-        "Práctica de lenguaje corporal (" + tipoTexto + ").",
-        "Duración: " + formatearTiempo(duracion) + ".",
-        "Eventos visuales detectados: " + eventosCorporales.length + "."
+        "Práctica de presentación (" + tipoTexto + ").",
+        "Duración: " + formatearTiempo(duracion) + "."
     ];
+
+    if (camaraUtilizadaEnPractica) {
+        partes.push(
+            "Eventos visuales detectados: " +
+            eventosCorporales.length + "."
+        );
+    } else {
+        partes.push("Práctica realizada sin cámara.");
+    }
 
     const textoTranscrito = obtenerTextoTranscrito();
 
@@ -1425,7 +1685,11 @@ function consejoPorTipo(tipo) {
     );
 }
 
-async function guardarConversacionCorporal(duracion, filas) {
+async function guardarConversacionPresentacion(
+    duracion,
+    filasMovimientos,
+    filasTranscripcion
+) {
     if (guardando) {
         return;
     }
@@ -1433,6 +1697,28 @@ async function guardarConversacionCorporal(duracion, filas) {
     guardando = true;
 
     const tipo = obtenerSituacion();
+
+    const bloques = [];
+
+    if (filasMovimientos.length) {
+        bloques.push("Lenguaje corporal:");
+        bloques.push(
+            filasMovimientos.map(function (fila) {
+                return fila.momento + " · " + fila.senal +
+                    ": " + fila.recomendacion;
+            }).join("\n")
+        );
+    }
+
+    if (filasTranscripcion.length) {
+        bloques.push("Transcripción:");
+        bloques.push(
+            filasTranscripcion.map(function (fila) {
+                return fila.momento + " · " + fila.senal +
+                    ": " + fila.recomendacion;
+            }).join("\n")
+        );
+    }
 
     try {
         const respuesta = await fetch("/guardar-conversacion-presentacion/", {
@@ -1447,10 +1733,7 @@ async function guardarConversacionCorporal(duracion, filas) {
                 situacion: tipo,
                 palabras_relleno: 0,
                 palabras_repetidas: {},
-                recomendacion: filas.map(function (fila) {
-                    return fila.momento + " · " + fila.senal +
-                        ": " + fila.recomendacion;
-                }).join("\n"),
+                recomendacion: bloques.join("\n\n"),
                 consejo_situacion: consejoPorTipo(tipo),
                 fecha_inicio: fechaInicio
                     ? fechaInicio.toISOString()

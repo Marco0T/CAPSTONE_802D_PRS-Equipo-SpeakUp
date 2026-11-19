@@ -23,7 +23,7 @@
 
     <link rel="stylesheet" href="{% static 'usuarios/tema.css' %}?v=1">
     <link rel="stylesheet" href="{% static 'usuarios/Pag1_estilo.css' %}?v=14">
-    <link rel="stylesheet" href="{% static 'usuarios/voz_presentacion.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'usuarios/voz_presentacion.css' %}?v=2">
 
 </head>
 
@@ -100,7 +100,7 @@
 
                 <p class="descripcion-modo">
                     Elige el contexto de tu práctica.
-                    La cámara graba solo video, sin audio;
+                    Puedes presentar con o sin cámara;
                     la transcripción se genera en vivo.
                 </p>
 
@@ -140,6 +140,29 @@
                     </button>
 
                 </div>
+
+                <label class="switch-camara" for="switchCamara">
+
+                    <input
+                        id="switchCamara"
+                        type="checkbox"
+                        checked
+                    >
+
+                    <span class="switch-pista" aria-hidden="true">
+                        <span class="switch-bola"></span>
+                    </span>
+
+                    <span class="switch-texto">
+                        Presentar con cámara
+                    </span>
+
+                </label>
+
+                <p class="switch-ayuda" id="switchCamaraAyuda">
+                    La cámara analizará tu lenguaje corporal.
+                    Si la desactivas, solo se evaluará tu transcripción.
+                </p>
 
             </div>
 
@@ -382,7 +405,25 @@
 
             </div>
 
-            <div id="contenidoFeedback"></div>
+            <div class="bloque-feedback">
+
+                <h3>
+                    Feedback del lenguaje corporal
+                </h3>
+
+                <div id="contenidoFeedback"></div>
+
+            </div>
+
+            <div class="bloque-feedback">
+
+                <h3>
+                    Feedback de la transcripción
+                </h3>
+
+                <div id="contenidoFeedbackTranscripcion"></div>
+
+            </div>
 
         </div>
 
@@ -394,7 +435,7 @@
     ========================================== -->
 
     <script
-        src="{% static 'usuarios/sistema_presentacion.js' %}?v=1"
+        src="{% static 'usuarios/sistema_presentacion.js' %}?v=2"
     ></script>
 
 </body>
