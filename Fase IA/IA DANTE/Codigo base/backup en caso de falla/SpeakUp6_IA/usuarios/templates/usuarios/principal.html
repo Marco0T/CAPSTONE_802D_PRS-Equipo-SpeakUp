@@ -1,0 +1,310 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SpeakUP te ayuda a practicar tu comunicación, fortalecer tu confianza y prepararte para presentaciones y entrevistas.">
+    <title>SpeakUP | Fortalece tu voz y tu confianza</title>
+    <link rel="stylesheet" href="{% static 'usuarios/principal.css' %}">
+</head>
+<body>
+    <header class="encabezado" id="inicio">
+        <div class="barra-navegacion">
+            <a class="marca" href="#inicio" aria-label="SpeakUP, ir al inicio">
+                <span class="marca-icono" aria-hidden="true">S</span>
+                <span>Speak<span>UP</span></span>
+            </a>
+
+            <nav class="menu" aria-label="Navegación principal">
+                <a class="enlace-menu activo" href="#inicio">Inicio</a>
+                <a class="enlace-menu" href="#funciones">Funciones</a>
+                <a class="enlace-menu" href="#como-funciona">Cómo funciona</a>
+                <a class="enlace-menu" href="#proposito">Nosotros</a>
+            </nav>
+
+            <div class="acciones-menu">
+                <a class="acceso-pendiente" href="{% url 'login' %}">
+                    Iniciar sesión
+                </a>
+
+                <a class="boton boton-menu" href="{% url 'registro' %}">
+                    Registrarse
+                </a>
+            </div>
+
+            <button class="menu-movil" type="button" aria-label="Abrir menú" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <!-- SECCIÓN PRINCIPAL -->
+        <section class="hero seccion-contenedor">
+            <div class="hero-contenido">
+                <span class="etiqueta">
+                    <span class="punto-etiqueta"></span>
+                    Tu espacio para practicar y crecer
+                </span>
+
+                <h1>
+                    Mejora tu comunicación,
+                    <span>fortalece tu confianza.</span>
+                </h1>
+
+                <p class="hero-descripcion">
+                    Practica tu forma de expresarte, descubre tus fortalezas y trabaja poco a poco
+                    en una comunicación más clara y segura.
+                </p>
+
+                <div class="hero-acciones">
+                    <a class="boton boton-principal" href="{% url 'registro' %}">
+                        Comenzar ahora <span aria-hidden="true">→</span>
+                    </a>
+
+                    <a class="boton boton-suave" href="#como-funciona">
+                        Conoce cómo funciona
+                    </a>
+                </div>
+
+                <div class="hero-nota">
+                    <span class="nota-icono" aria-hidden="true">✦</span>
+                    Un espacio para practicar a tu propio ritmo.
+                </div>
+            </div>
+
+            <div class="hero-ilustracion" aria-label="Ilustración de una persona practicando una presentación" role="img">
+                <div class="mancha mancha-grande"></div>
+                <div class="mancha mancha-pequena"></div>
+                <div class="burbuja burbuja-uno">¡Tú puedes!</div>
+                <div class="burbuja burbuja-dos"><span>✦</span> Confianza</div>
+
+                <svg class="ilustracion-persona" viewBox="0 0 520 470" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <ellipse cx="267" cy="423" rx="174" ry="20" fill="#D4E8E1"/>
+                    <path d="M105 364c-8-77 37-130 103-142l102 4c67 16 104 69 105 138l-8 48H110z" fill="#B9DCCF"/>
+                    <path d="M202 228c14-17 34-26 61-26 31 0 52 11 66 31l-19 69H211z" fill="#FFFFFF"/>
+                    <path d="M225 229l38 43 42-43 20 24-24 105h-91l-18-104z" fill="#8CBFAE"/>
+                    <path d="M245 264l18 18 18-18-7 94h-23z" fill="#F6DFA5"/>
+                    <path d="M220 105c0-48 31-78 76-78 46 0 78 34 78 82v58c0 54-35 88-78 88-44 0-76-37-76-88z" fill="#A96548"/>
+                    <path d="M214 117c-8-55 18-100 73-108 48-7 91 24 94 76-20-16-37-31-49-50-17 25-61 42-118 42z" fill="#493B43"/>
+                    <path d="M216 126c-12-8-22 2-18 22 3 16 13 26 25 24" fill="#A96548"/>
+                    <path d="M369 126c12-8 22 2 18 22-3 16-13 26-25 24" fill="#A96548"/>
+                    <path d="M256 151c5-4 11-4 16 0M318 151c5-4 11-4 16 0" stroke="#493B43" stroke-width="5" stroke-linecap="round"/>
+                    <path d="M286 163l-5 20 12 2" stroke="#854F40" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    <path d="M267 202c12 10 27 10 39-1" stroke="#8D4C43" stroke-width="5" stroke-linecap="round" fill="none"/>
+                    <path d="M214 278c-34 17-57 47-68 84l-18 48c-5 13 8 24 20 17l57-35 41-91z" fill="#A96548"/>
+                    <path d="M352 278c34 17 54 46 64 82l13 47c4 14-10 23-21 15l-52-36-37-91z" fill="#A96548"/>
+                    <path d="M130 402l-19 12c-9 6-4 19 7 19h48c13 0 19-15 9-23l-17-13zM411 399l18 12c9 6 4 19-7 19h-47c-13 0-19-15-9-23l17-13z" fill="#A96548"/>
+                    <path d="M144 345l-31-31M405 345l31-31" stroke="#A96548" stroke-width="13" stroke-linecap="round"/>
+                    <path d="M98 290c-17-14-24-31-18-43 7-12 23-10 35 1 8-16 24-20 34-10 11 11 3 30-12 45l-20 19z" fill="#F4DFA8"/>
+                    <path d="M410 223c10-17 27-23 38-13 11 10 7 27-7 42l-21 21-23-20c-16-14-18-31-7-41 8-8 18-4 20 11z" fill="#C8B5E5"/>
+                    <path d="M91 179c20-20 38-20 54 0M383 82c17-17 33-17 47 0" stroke="#D3BCEB" stroke-width="7" stroke-linecap="round" fill="none"/>
+                    <path d="M72 116l7 14 15 7-15 7-7 15-7-15-15-7 15-7zM438 170l5 10 11 5-11 5-5 11-5-11-11-5 11-5z" fill="#E8C96E"/>
+                </svg>
+
+                <div class="tarjeta-flotante">
+                    <span class="tarjeta-check">✓</span>
+                    <span>
+                        <strong>Cada práctica cuenta</strong>
+                        <small>Avanza paso a paso</small>
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN DE FUNCIONES -->
+        <section class="seccion-beneficios" id="funciones">
+            <div class="seccion-contenedor">
+                <div class="encabezado-seccion">
+                    <span class="sobrelinea">LO QUE PUEDES LOGRAR</span>
+                    <h2>Tu voz también puede <span>entrenarse.</span></h2>
+                    <p>
+                        Herramientas para que practiques, conozcas tu desempeño y sigas mejorando.
+                    </p>
+                </div>
+
+                <div class="tarjetas-funciones">
+                    <article class="tarjeta-funcion tarjeta-azul">
+                        <div class="icono-funcion">🎙️</div>
+                        <h3>Practica tu voz</h3>
+                        <p>
+                            Ensaya presentaciones o respuestas de entrevistas en un espacio pensado
+                            para practicar sin presión.
+                        </p>
+                        <span class="numero-funcion">01</span>
+                    </article>
+
+                    <article class="tarjeta-funcion tarjeta-verde">
+                        <div class="icono-funcion">📊</div>
+                        <h3>Conoce tu progreso</h3>
+                        <p>
+                            Revisa la transcripción y observa aspectos de tu expresión,
+                            como palabras repetidas o muletillas.
+                        </p>
+                        <span class="numero-funcion">02</span>
+                    </article>
+
+                    <article class="tarjeta-funcion tarjeta-lila">
+                        <div class="icono-funcion">💡</div>
+                        <h3>Recibe recomendaciones</h3>
+                        <p>
+                            Obtén sugerencias que te ayuden a identificar oportunidades
+                            de mejora en cada práctica.
+                        </p>
+                        <span class="numero-funcion">03</span>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN CÓMO FUNCIONA -->
+        <section class="seccion-como seccion-contenedor" id="como-funciona">
+            <div class="encabezado-seccion">
+                <span class="sobrelinea">EMPIEZA A TU RITMO</span>
+                <h2>¿Cómo funciona <span>SpeakUP?</span></h2>
+                <p>Practicar es sencillo. Lo importante es dar el primer paso.</p>
+            </div>
+
+            <div class="pasos">
+                <article class="paso">
+                    <div class="paso-ilustracion paso-microfono">
+                        <span>🎤</span>
+                    </div>
+                    <span class="paso-numero">PASO 1</span>
+                    <h3>Elige qué practicar</h3>
+                    <p>
+                        Selecciona una presentación o una entrevista y prepárate para comenzar.
+                    </p>
+                </article>
+
+                <div class="conector-pasos" aria-hidden="true">······→</div>
+
+                <article class="paso">
+                    <div class="paso-ilustracion paso-habla">
+                        <span>💬</span>
+                    </div>
+                    <span class="paso-numero">PASO 2</span>
+                    <h3>Habla con libertad</h3>
+                    <p>
+                        Realiza tu práctica utilizando el micrófono y expresa tus ideas a tu manera.
+                    </p>
+                </article>
+
+                <div class="conector-pasos" aria-hidden="true">······→</div>
+
+                <article class="paso">
+                    <div class="paso-ilustracion paso-crece">
+                        <span>🌱</span>
+                    </div>
+                    <span class="paso-numero">PASO 3</span>
+                    <h3>Revisa y mejora</h3>
+                    <p>
+                        Consulta tus resultados y recomendaciones para seguir avanzando
+                        en futuras prácticas.
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        <!-- SECCIÓN PROPÓSITO -->
+        <section class="seccion-proposito" id="proposito">
+            <div class="seccion-contenedor proposito-contenido">
+                <div class="proposito-ilustracion" aria-hidden="true">
+                    <div class="circulo-proposito"></div>
+                    <div class="hoja hoja-uno"></div>
+                    <div class="hoja hoja-dos"></div>
+                    <div class="libro-proposito">
+                        <span>SpeakUP</span>
+                        <small>Tu voz importa</small>
+                    </div>
+                    <span class="estrella estrella-uno">✦</span>
+                    <span class="estrella estrella-dos">✧</span>
+                </div>
+
+                <div class="proposito-texto">
+                    <span class="sobrelinea">NUESTRO PROPÓSITO</span>
+
+                    <h2>
+                        Un espacio para aprender a expresarte con
+                        <span>más confianza.</span>
+                    </h2>
+
+                    <p>
+                        Sabemos que hablar frente a otras personas, presentar una idea o enfrentar
+                        una entrevista puede ser un desafío. SpeakUP nace para ofrecer un espacio
+                        de práctica donde puedas reconocer tus fortalezas y trabajar en aquellos
+                        aspectos que deseas mejorar.
+                    </p>
+
+                    <p>
+                        No se trata de hablar perfecto, sino de avanzar con cada intento y encontrar
+                        tu propia manera de comunicarte.
+                    </p>
+
+                    <a class="enlace-texto" href="#inicio">
+                        Conoce SpeakUP <span>↑</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- LLAMADO FINAL -->
+        <section class="llamado-final seccion-contenedor">
+            <div class="llamado-caja">
+                <div class="llamado-decoracion" aria-hidden="true">✦</div>
+
+                <span class="sobrelinea">TU PRÓXIMO PASO COMIENZA AQUÍ</span>
+
+                <h2>
+                    Cada práctica es una oportunidad para
+                    <span>crecer.</span>
+                </h2>
+
+                <p>
+                    Encuentra tu ritmo, confía en tu proceso y deja que tu voz se haga escuchar.
+                </p>
+
+                <a class="boton boton-principal" href="{% url 'login' %}">
+                    Comenzar mi práctica <span aria-hidden="true">→</span>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <!-- PIE DE PÁGINA -->
+    <footer class="pie-pagina">
+        <div class="seccion-contenedor pie-contenido">
+            <a class="marca marca-pie" href="#inicio">
+                <span class="marca-icono" aria-hidden="true">S</span>
+                <span>Speak<span>UP</span></span>
+            </a>
+
+            <p>Tu voz merece espacio para crecer.</p>
+
+            <span class="copyright">
+                © 2026 SpeakUP. Proyecto de práctica y desarrollo de comunicación.
+            </span>
+        </div>
+    </footer>
+
+    <!-- MENÚ MÓVIL -->
+    <script>
+        const botonMenu = document.querySelector(".menu-movil");
+        const menu = document.querySelector(".menu");
+
+        botonMenu.addEventListener("click", () => {
+            const abierto = menu.classList.toggle("menu-abierto");
+            botonMenu.setAttribute("aria-expanded", abierto);
+        });
+
+        menu.querySelectorAll("a").forEach((enlace) => {
+            enlace.addEventListener("click", () => {
+                menu.classList.remove("menu-abierto");
+                botonMenu.setAttribute("aria-expanded", "false");
+            });
+        });
+    </script>
+</body>
+</html>

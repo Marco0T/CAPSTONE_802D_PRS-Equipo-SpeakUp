@@ -1,4 +1,8 @@
 
+import json
+import re
+
+from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.hashers import make_password, check_password
 from django.http import JsonResponse
@@ -6,6 +10,7 @@ from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.views.decorators.csrf import ensure_csrf_cookie
+from groq import Groq
 
 from .models import Usuario, Conversacion
 
@@ -227,6 +232,178 @@ def historial(request):
     )
 
 
+def limpiar_markdown_feedback(texto):
+    texto = str(texto or "").strip()
+
+    texto = re.sub(r"^\s*(?:[-*+]|\d+[.)])\s+", "", texto)
+    texto = re.sub(r"\*\*(.*?)\*\*", r"\1", texto)
+    texto = re.sub(r"__(.*?)__", r"\1", texto)
+    texto = re.sub(r"`([^`]+)`", r"\1", texto)
+    texto = re.sub(r"^#{1,6}\s*", "", texto)
+
+    return texto.strip()
+
+
+def parsear_filas_feedback(texto):
+    if not texto:
+        return []
+
+    contenido = str(texto).strip()
+
+    if contenido.startswith("[") or contenido.startswith("{"):
+        try:
+            datos = json.loads(contenido)
+            lista = datos if isinstance(datos, list) else datos.get("feedback", [])
+
+            filas = []
+            for item in lista:
+                if not isinstance(item, dict):
+                    continue
+
+                momento = limpiar_markdown_feedback(
+                    item.get("momento")
+                    or item.get("tiempo")
+                    or item.get("time")
+                    or ""
+                )
+                senal = limpiar_markdown_feedback(
+                    item.get("senal")
+                    or item.get("señal")
+                    or item.get("segmento")
+                    or item.get("segment")
+                    or item.get("discurso")
+                    or ""
+                )
+                recomendacion = (
+                    item.get("recomendacion")
+                    or item.get("recommendation")
+                    or item.get("correccion")
+                    or item.get("correction")
+                    or item.get("texto")
+                    or ""
+                )
+
+                segmento = " · ".join(
+                    parte for parte in (momento, senal) if parte
+                ) or "Feedback general"
+
+                if str(recomendacion).strip():
+                    filas.append({
+                        "segmento": segmento,
+                        "recomendacion": limpiar_markdown_feedback(recomendacion)
+                    })
+
+            if filas:
+                return filas
+        except (json.JSONDecodeError, TypeError, ValueError):
+            pass
+
+    filas = []
+    segmento_actual = "Feedback general"
+    buffer = []
+
+    def agregar_fila():
+        recomendacion = " ".join(buffer).strip()
+        if recomendacion:
+            filas.append({
+                "segmento": segmento_actual or "Feedback general",
+                "recomendacion": recomendacion
+            })
+        buffer.clear()
+
+    for linea in contenido.splitlines():
+        linea = linea.strip()
+
+        if not linea or linea.startswith("```"):
+            continue
+
+        if "|" in linea and re.fullmatch(r"\|?[\s:\-|]+\|?", linea):
+            continue
+
+        if "|" in linea:
+            partes = [parte.strip() for parte in linea.split("|") if parte.strip()]
+
+            if len(partes) >= 3:
+                momento = limpiar_markdown_feedback(partes[0])
+                senal = limpiar_markdown_feedback(partes[1])
+                recomendacion = limpiar_markdown_feedback(" ".join(partes[2:]))
+
+                es_encabezado = (
+                    re.search(r"momento|tiempo", momento, re.IGNORECASE)
+                    and re.search(r"se[ñn]al", senal, re.IGNORECASE)
+                )
+
+                if es_encabezado:
+                    continue
+
+                agregar_fila()
+                if recomendacion:
+                    filas.append({
+                        "segmento": " · ".join(
+                            parte for parte in (momento, senal) if parte
+                        ) or "Feedback general",
+                        "recomendacion": recomendacion
+                    })
+                continue
+
+            if len(partes) >= 2:
+                segmento = limpiar_markdown_feedback(partes[0])
+                recomendacion = limpiar_markdown_feedback(" ".join(partes[1:]))
+
+                es_encabezado = (
+                    re.fullmatch(
+                        r"(segmento(\s+del\s+discurso)?|discurso)",
+                        segmento,
+                        re.IGNORECASE
+                    )
+                    and re.search(r"recomendaci[oó]n", recomendacion, re.IGNORECASE)
+                )
+
+                if es_encabezado:
+                    continue
+
+                agregar_fila()
+                if recomendacion:
+                    filas.append({
+                        "segmento": segmento or "Feedback general",
+                        "recomendacion": recomendacion
+                    })
+                continue
+
+        encabezado = re.match(r"^#{1,6}\s+(.+)$", linea)
+        if encabezado:
+            agregar_fila()
+            segmento_actual = limpiar_markdown_feedback(encabezado.group(1))
+            continue
+
+        negrita = re.match(r"^\*\*(.+?)\*\*:?\s*$", linea)
+        if negrita:
+            agregar_fila()
+            segmento_actual = limpiar_markdown_feedback(negrita.group(1))
+            continue
+
+        etiqueta = re.match(r"^([^:]{3,60}):\s+(.+)$", linea)
+        if etiqueta:
+            agregar_fila()
+            filas.append({
+                "segmento": limpiar_markdown_feedback(etiqueta.group(1)),
+                "recomendacion": limpiar_markdown_feedback(etiqueta.group(2))
+            })
+            continue
+
+        buffer.append(limpiar_markdown_feedback(linea))
+
+    agregar_fila()
+
+    if not filas:
+        filas.append({
+            "segmento": "Feedback general",
+            "recomendacion": limpiar_markdown_feedback(contenido)
+        })
+
+    return filas
+
+
 def detalle_conversacion(request, conversacion_id):
     usuario_id = request.session.get("usuario_id")
 
@@ -242,7 +419,15 @@ def detalle_conversacion(request, conversacion_id):
     return render(
         request,
         "usuarios/detalle_conversacion.html",
-        {"conversacion": conversacion}
+        {
+            "conversacion": conversacion,
+            "recomendacion_filas": parsear_filas_feedback(
+                conversacion.recomendacion
+            ),
+            "consejo_filas": parsear_filas_feedback(
+                conversacion.consejo_situacion
+            )
+        }
     )
 
 
@@ -253,6 +438,73 @@ def iniciar(request):
 def cerrar_sesion(request):
     request.session.flush()
     return redirect("/login/")
+
+GROQ_SYSTEM_PROMPT = (
+    "Eres un coach experto en lenguaje corporal, presencia escénica y pitch "
+    "para SpeakUp. La práctica se graba SOLO en video, sin audio: analiza "
+    "exclusivamente las señales visuales y el lenguaje corporal. Evalúa "
+    "postura, contacto visual, movimiento de manos, desplazamiento, tensión "
+    "y gestos que transmitan inseguridad. Usa como apoyo los eventos de "
+    "movimiento detectados automáticamente, pero no inventes detalles que no "
+    "puedan deducirse de ellos. "
+    "Devuelve EXCLUSIVAMENTE un objeto JSON válido con esta forma exacta: "
+    "{\"feedback\":[{\"momento\":\"mm:ss\","
+    "\"senal\":\"Señal de inseguridad detectada\","
+    "\"recomendacion\":\"Recomendación accionable del coach\"}]}. "
+    "Incluye entre 3 y 6 filas ordenadas por tiempo, con recomendaciones "
+    "concretas y prácticas. No uses Markdown, tablas, viñetas, bloques de "
+    "código ni texto adicional fuera del JSON. Mantén un tono profesional, "
+    "cercano y útil."
+)
+
+
+def ask_groq(request):
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "Método no permitido."},
+            status=405
+        )
+
+    try:
+        datos = json.loads(request.body)
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return JsonResponse(
+            {"error": "Los datos enviados no son válidos."},
+            status=400
+        )
+
+    prompt = datos.get("prompt")
+
+    if not isinstance(prompt, str) or not prompt.strip():
+        return JsonResponse(
+            {"error": "El parámetro 'prompt' es obligatorio."},
+            status=400
+        )
+
+    if not settings.GROQ_API_KEY:
+        return JsonResponse(
+            {"error": "El servicio de feedback no está configurado."},
+            status=503
+        )
+
+    try:
+        cliente = Groq(api_key=settings.GROQ_API_KEY)
+        respuesta = cliente.chat.completions.create(
+            model="openai/gpt-oss-20b",
+            messages=[
+                {"role": "system", "content": GROQ_SYSTEM_PROMPT},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        respuesta_texto = respuesta.choices[0].message.content
+        return JsonResponse({"response": respuesta_texto})
+    except Exception as error:
+        print("Error al consultar Groq:", error)
+        return JsonResponse(
+            {"error": "No se pudo obtener una respuesta del asistente."},
+            status=500
+        )
+
 
 @require_POST
 def eliminar_conversacion(request, conversacion_id):

@@ -15,6 +15,9 @@ urlpatterns = [
     # Página principal de reconocimiento de voz
     path("voz/", views.voz, name="voz"),
 
+    # Consultar al asistente de Groq
+    path("api/ask/", views.ask_groq, name="ask_groq"),
+
     # Guardar una conversación desde JavaScript
     path(
         "guardar-conversacion/",
@@ -39,6 +42,7 @@ urlpatterns = [
     # Otras rutas existentes
     path("iniciar/", views.iniciar, name="iniciar"),
     path("cerrar-sesion/", views.cerrar_sesion, name="cerrar_sesion"),
+    path("", views.iniciar, name= "home"),
 
     path(
     "historial/eliminar/<int:conversacion_id>/",

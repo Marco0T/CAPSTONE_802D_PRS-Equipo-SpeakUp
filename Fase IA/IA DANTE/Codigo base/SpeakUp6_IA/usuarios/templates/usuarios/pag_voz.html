@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    {% load static %}
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        SpeakUP - Práctica de comunicación oral
+    </title>
+
+    <!-- ==========================================
+         ESTILOS PRINCIPALES
+    ========================================== -->
+
+    <link rel="stylesheet" href="{% static 'usuarios/tema.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'usuarios/Pag1_estilo.css' %}?v=14">
+    <link rel="stylesheet" href="{% static 'usuarios/ajustes_interfaz.css' %}?v=1">
+    <!-- Los estilos de esta pantalla están en Pag1_estilo.css (y tema.css) -->
+
+</head>
+
+
+<body>
+
+    <!-- ==========================================
+         ENCABEZADO PRINCIPAL
+    ========================================== -->
+
+    <header>
+
+        <h2>
+            Bienvenido {{ nombre_usuario }}
+        </h2>
+
+        <nav>
+
+            <a href="/voz/">
+                Inicio
+            </a>
+
+            <a href="/historial/">
+                Mi progreso
+            </a>
+
+            <a href="/cerrar-sesion/">
+                Cerrar sesión
+            </a>
+
+        </nav>
+
+    </header>
+
+
+    <!-- ==========================================
+         CONTENIDO PRINCIPAL
+    ========================================== -->
+
+    <main>
+
+        <section class="presentacion">
+
+            <!-- ==================================
+                 TÍTULO
+            ================================== -->
+
+            <div class="titulo-principal">
+
+                <h1>
+                    Entrevista Laboral
+                </h1>
+
+                <p>
+                    Practica tu comunicación oral
+                    y recibe recomendaciones
+                    personalizadas con inteligencia
+                    artificial.
+                </p>
+
+            </div>
+
+
+            <!-- ==================================
+                 SELECCIÓN DE SITUACIÓN
+            ================================== -->
+
+            <div class="situaciones">
+
+                <h3>
+                    Entrevista laboral
+                </h3>
+
+                <p class="descripcion-modo">
+
+                    Practica tus respuestas de entrevista
+                    y recibe una evaluación personalizada.
+                    Si quieres ensayar una presentación,
+                    cambia de modo con el botón.
+
+                </p>
+
+                <!--
+                    La IA de esta página sigue trabajando en
+                    modo entrevista. El control se mantiene
+                    oculto para no alterar el funcionamiento
+                    original del reconocimiento de voz.
+                -->
+
+                <input
+                    type="radio"
+                    name="situacion"
+                    value="entrevista"
+                    checked
+                    hidden
+                >
+
+                <div class="opciones-situacion">
+
+                    <button
+                        type="button"
+                        class="opcion-situacion boton-cambio-modo"
+                        onclick="window.location.href='{% url 'voz_presentacion' %}'"
+                    >
+                        Presentación
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================
+                 TRANSCRIPCIÓN EN TIEMPO REAL
+            ================================== -->
+
+            <div class="paneles-practica">
+
+            <div class="zona-practica">
+
+                <div class="zona-transcripcion">
+
+                    <h3>
+                        🎤 Transcripción en tiempo real
+                    </h3>
+
+                    <textarea
+                        id="texto"
+                        rows="10"
+                        placeholder="Presiona «Comenzar práctica» y empieza a hablar..."
+                        aria-label="Transcripción de la práctica"
+                        readonly
+                    ></textarea>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================
+                 FASE 3 - MEDIAPIPE
+            ================================== -->
+
+            <section
+                class="seccion-camara"
+                aria-labelledby="titulo-camara"
+            >
+
+                <!-- ENCABEZADO -->
+
+                <div class="camara-encabezado">
+
+                    <div>
+
+                        <h3 id="titulo-camara">
+                            Análisis visual con MediaPipe
+                        </h3>
+
+                        <p>
+                            Activa la cámara para analizar
+                            la presencia del rostro,
+                            la orientación de la cabeza,
+                            la postura y los movimientos
+                            de las manos.
+                        </p>
+
+                    </div>
+
+                    <button
+                        id="activar-camara"
+                        type="button"
+                    >
+                        Activar cámara
+                    </button>
+
+                </div>
+
+
+                <!-- CONTENIDO -->
+
+                <div class="camara-contenido">
+
+                    <!-- VISTA PREVIA -->
+
+                    <div class="contenedor-camara">
+
+                        <video
+                            id="camara"
+                            autoplay
+                            muted
+                            playsinline
+                            aria-label="Vista previa de la cámara"
+                        ></video>
+
+                        <!--
+                            camara.js crea automáticamente
+                            el canvas de MediaPipe aquí.
+                        -->
+
+                    </div>
+
+
+                    <!-- ESTADÍSTICAS -->
+
+                    <div class="camara-informacion">
+
+                        <h4>
+                            Estadísticas visuales
+                        </h4>
+
+                        <p
+                            id="estado-camara"
+                            role="status"
+                            aria-live="polite"
+                        >
+                            Cámara desactivada.
+                        </p>
+
+                        <div
+                            id="resultados-camara"
+                            aria-live="off"
+                        >
+
+                            <p>
+                                Activa la cámara y comienza
+                                una práctica para visualizar
+                                las estadísticas.
+                            </p>
+
+                        </div>
+
+                        <small class="nota-mediapipe">
+
+                            MediaPipe utiliza estimaciones
+                            basadas en puntos del rostro,
+                            cuerpo y manos.
+
+                            Estos indicadores no permiten
+                            determinar emociones ni niveles
+                            de confianza.
+
+                            El video se procesa localmente
+                            en el navegador. SpeakUP solo
+                            envía las estadísticas calculadas
+                            a Django cuando finaliza
+                            la práctica.
+
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            </div><!-- /paneles-practica -->
+
+
+            <!-- ==================================
+                 CONTROLES DE PRÁCTICA
+            ================================== -->
+
+            <div class="controles-practica">
+
+                <button
+                    id="iniciar"
+                    type="button"
+                >
+                    Comenzar práctica
+                </button>
+
+                <button
+                    id="detener"
+                    type="button"
+                    disabled
+                >
+                    Detener micrófono
+                </button>
+
+            </div>
+
+
+            <!-- ESTADO DEL RECONOCIMIENTO -->
+
+            <p
+                id="estado"
+                role="status"
+                aria-live="polite"
+            >
+
+                Presiona «Comenzar práctica»
+                para iniciar.
+
+            </p>
+
+        </section>
+
+    </main>
+
+
+    <!-- ==========================================
+         VENTANA EMERGENTE DE RESULTADOS
+    ========================================== -->
+
+    <div
+        id="modal-resultados"
+        class="modal-resultados"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="titulo-modal"
+    >
+
+        <div class="modal-contenido">
+
+            <!-- ENCABEZADO -->
+
+            <div class="modal-encabezado">
+
+                <h2 id="titulo-modal">
+                    Resultados de tu práctica
+                </h2>
+
+                <button
+                    id="cerrar-modal"
+                    class="cerrar-modal"
+                    type="button"
+                    aria-label="Cerrar resultados"
+                >
+                    &times;
+                </button>
+
+            </div>
+
+
+            <!-- ==================================
+                 CARGA DE IA
+            ================================== -->
+
+            <div id="carga-ia">
+
+                <div class="spinner"></div>
+
+                <p>
+
+                    SpeakUP está analizando
+                    tu práctica y comparándola
+                    con tus conversaciones anteriores...
+
+                </p>
+
+            </div>
+
+
+            <!-- ==================================
+                 CONTENIDO DE RESULTADOS
+            ================================== -->
+
+            <div id="contenido-resultados">
+
+                <!-- MÉTRICAS VERBALES -->
+
+                <div class="resumen-metricas">
+
+                    <div class="tarjeta-metrica">
+
+                        <strong id="cantidadPalabras">
+                            0
+                        </strong>
+
+                        <span>
+                            Palabras
+                        </span>
+
+                    </div>
+
+                    <div class="tarjeta-metrica">
+
+                        <strong id="relleno">
+                            0
+                        </strong>
+
+                        <span>
+                            Posibles muletillas
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- REPETICIONES -->
+
+                <div class="bloque-resultado">
+
+                    <h3>
+                        Repeticiones consecutivas
+                    </h3>
+
+                    <p id="repetidas">
+                        Ninguna
+                    </p>
+
+                </div>
+
+
+                <!-- ==================================
+                     RESULTADOS VISUALES
+                ================================== -->
+
+                <div
+                    id="bloque-resultados-visuales"
+                    class="bloque-resultado"
+                >
+
+                    <h3>
+                        Resultados de MediaPipe
+                    </h3>
+
+                    <p id="texto-resultados-visuales">
+
+                        Preparando estadísticas visuales...
+
+                    </p>
+
+                </div>
+
+
+                <!-- ==================================
+                     SEGUIMIENTO DE IA
+                ================================== -->
+
+                <div
+                    id="seguimiento-ia"
+                    class="bloque-resultado"
+                >
+
+                    <h3>
+                        Evaluación y consejo de SpeakUP
+                    </h3>
+
+                    <p
+                        id="texto-seguimiento-ia"
+                        aria-live="polite"
+                    >
+
+                        Preparando evaluación...
+
+                    </p>
+
+                </div>
+
+
+                <!-- ==================================
+                     CERRAR RESULTADOS
+                ================================== -->
+
+                <div class="modal-acciones">
+
+                    <button
+                        id="cerrar-resultados"
+                        type="button"
+                    >
+                        Cerrar resultados
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================
+         JAVASCRIPT
+    ========================================== -->
+
+    <!-- RECONOCIMIENTO DE VOZ -->
+
+    <script
+        src="{% static 'usuarios/sistema.js' %}?v=7"
+    ></script>
+
+
+    <!-- MEDIAPIPE -->
+
+<script src="{% static 'usuarios/camara.js' %}?v=8"></script>
+
+</body>
+
+</html>

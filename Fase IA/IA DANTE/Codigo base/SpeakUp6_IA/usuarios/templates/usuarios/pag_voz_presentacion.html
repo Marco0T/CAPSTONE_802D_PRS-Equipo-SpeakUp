@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    {% load static %}
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        SpeakUP - Presentación
+    </title>
+
+    <!-- ==========================================
+         ESTILOS PRINCIPALES (MISMA BASE VISUAL
+         QUE LA PÁGINA DE VOZ DE SpeakUp6_IA)
+    ========================================== -->
+
+    <link rel="stylesheet" href="{% static 'usuarios/tema.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'usuarios/Pag1_estilo.css' %}?v=14">
+    <link rel="stylesheet" href="{% static 'usuarios/voz_presentacion.css' %}?v=2">
+
+</head>
+
+
+<body>
+
+    <!-- ==========================================
+         ENCABEZADO PRINCIPAL
+    ========================================== -->
+
+    <header>
+
+        <h2>
+            Bienvenido {{ nombre_usuario }}
+        </h2>
+
+        <nav>
+
+            <a href="{% url 'voz' %}">
+                Entrevista laboral
+            </a>
+
+            <a href="{% url 'historial' %}">
+                Mi progreso
+            </a>
+
+            <a href="{% url 'cerrar_sesion' %}">
+                Cerrar sesión
+            </a>
+
+        </nav>
+
+    </header>
+
+
+    <!-- ==========================================
+         CONTENIDO PRINCIPAL
+    ========================================== -->
+
+    <main>
+
+        <div hidden>{% csrf_token %}</div>
+
+        <section class="presentacion">
+
+            <!-- ==================================
+                 TÍTULO
+            ================================== -->
+
+            <div class="titulo-principal">
+
+                <h1>
+                    Presentación
+                </h1>
+
+                <p>
+                    Ensaya tu presentación, recibe feedback
+                    sobre tu lenguaje corporal y vuelve a la
+                    entrevista laboral cuando lo necesites.
+                </p>
+
+            </div>
+
+
+            <!-- ==================================
+                 TIPO DE PRESENTACIÓN Y NAVEGACIÓN
+            ================================== -->
+
+            <div class="situaciones">
+
+                <h3>
+                    Tipo de presentación
+                </h3>
+
+                <p class="descripcion-modo">
+                    Elige el contexto de tu práctica.
+                    Puedes presentar con o sin cámara;
+                    la transcripción se genera en vivo.
+                </p>
+
+                <div class="opciones-situacion">
+
+                    <label class="opcion-situacion">
+
+                        <input
+                            type="radio"
+                            name="situacion"
+                            value="estudiante"
+                            checked
+                        >
+
+                        Estudiante
+
+                    </label>
+
+                    <label class="opcion-situacion">
+
+                        <input
+                            type="radio"
+                            name="situacion"
+                            value="trabajador"
+                        >
+
+                        Trabajador
+
+                    </label>
+
+                    <button
+                        type="button"
+                        class="opcion-situacion boton-cambio-modo"
+                        onclick="window.location.href='{% url 'voz' %}'"
+                    >
+                        Entrevista laboral
+                    </button>
+
+                </div>
+
+                <label class="switch-camara" for="switchCamara">
+
+                    <input
+                        id="switchCamara"
+                        type="checkbox"
+                        checked
+                    >
+
+                    <span class="switch-pista" aria-hidden="true">
+                        <span class="switch-bola"></span>
+                    </span>
+
+                    <span class="switch-texto">
+                        Presentar con cámara
+                    </span>
+
+                </label>
+
+                <p class="switch-ayuda" id="switchCamaraAyuda">
+                    La cámara analizará tu lenguaje corporal.
+                    Si la desactivas, solo se evaluará tu transcripción.
+                </p>
+
+            </div>
+
+
+            <!-- ==================================
+                 MÓDULO DE CÁMARA Y MOVIMIENTO
+            ================================== -->
+
+            <section class="seccion-camara">
+
+                <div class="camara-encabezado">
+
+                    <div>
+
+                        <h3>
+                            Análisis visual de tu presentación
+                        </h3>
+
+                        <p>
+                            La cámara se activará al comenzar
+                            la práctica y detectará cambios
+                            de movimiento durante tu discurso.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="camara-contenido">
+
+                    <div class="modulo-camara" id="moduloCamara">
+
+                        <div class="video-marco">
+
+                            <video
+                                id="videoCamara"
+                                autoplay
+                                muted
+                                playsinline
+                                aria-label="Vista previa de la cámara"
+                            ></video>
+
+                            <div
+                                class="video-placeholder"
+                                id="placeholderCamara"
+                            >
+                                La cámara se activará al comenzar la práctica
+                            </div>
+
+                            <div
+                                id="alertaMovimiento"
+                                class="alerta-movimiento"
+                                role="status"
+                                aria-live="polite"
+                            >
+                                <span class="punto-alerta" aria-hidden="true"></span>
+                                Movimiento excesivo detectado
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="camara-informacion">
+
+                        <h4>
+                            Estadísticas en vivo
+                        </h4>
+
+                        <p
+                            class="camara-estado"
+                            id="camaraEstado"
+                        >
+                            Cámara inactiva
+                        </p>
+
+                        <div class="metricas">
+
+                            <div class="metrica">
+
+                                <span
+                                    class="metrica-valor"
+                                    id="tiempoPractica"
+                                >
+                                    00:00
+                                </span>
+
+                                <span class="metrica-etiqueta">
+                                    Tiempo
+                                </span>
+
+                            </div>
+
+                            <div class="metrica">
+
+                                <span
+                                    class="metrica-valor"
+                                    id="alertasPractica"
+                                >
+                                    0
+                                </span>
+
+                                <span class="metrica-etiqueta">
+                                    Alertas visuales
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <p
+                            class="panel-vivo-texto"
+                            id="resumenVivo"
+                            aria-live="polite"
+                        >
+                            La grabación de video no incluye audio;
+                            la transcripción se genera en vivo.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==================================
+                 TRANSCRIPCIÓN EN VIVO
+            ================================== -->
+
+            <div
+                class="panel-transcripcion"
+                id="panelTranscripcion"
+            >
+
+                <div class="transcripcion-cabecera">
+
+                    <h3>
+                        Transcripción en vivo
+                    </h3>
+
+                    <span
+                        class="transcripcion-estado"
+                        id="transcripcionEstado"
+                    >
+                        En espera
+                    </span>
+
+                </div>
+
+                <div
+                    class="transcripcion-texto"
+                    id="transcripcionTexto"
+                    role="log"
+                    aria-live="polite"
+                >
+                    <span class="transcripcion-vacia">
+                        Aquí verás tus palabras mientras presentas.
+                    </span>
+                </div>
+
+            </div>
+
+
+            <!-- ==================================
+                 CONTROLES DE PRÁCTICA
+            ================================== -->
+
+            <div class="controles-practica">
+
+                <button
+                    id="accionPractica"
+                    type="button"
+                >
+                    Comenzar práctica
+                </button>
+
+            </div>
+
+            <p
+                id="estado"
+                role="status"
+                aria-live="polite"
+            >
+                Presiona el botón para comenzar...
+            </p>
+
+        </section>
+
+    </main>
+
+
+    <!-- ==========================================
+         MODAL DE FEEDBACK
+    ========================================== -->
+
+    <div
+        id="modalFeedback"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tituloFeedback"
+        style="display: none;"
+    >
+
+        <div class="modal-contenido">
+
+            <button
+                id="cerrarFeedback"
+                type="button"
+                aria-label="Cerrar feedback"
+            >
+                X
+            </button>
+
+            <h2 id="tituloFeedback">
+                Feedback del Coach
+            </h2>
+
+            <div
+                class="reproductor-resultado"
+                id="reproductorResultado"
+                hidden
+            >
+
+                <video
+                    id="videoResultado"
+                    controls
+                    playsinline
+                ></video>
+
+                <a
+                    id="descargarVideo"
+                    class="btn-descarga"
+                    download="practica-speakup.webm"
+                >
+                    Descargar video sin audio
+                </a>
+
+            </div>
+
+            <div class="bloque-feedback">
+
+                <h3>
+                    Feedback del lenguaje corporal
+                </h3>
+
+                <div id="contenidoFeedback"></div>
+
+            </div>
+
+            <div class="bloque-feedback">
+
+                <h3>
+                    Feedback de la transcripción
+                </h3>
+
+                <div id="contenidoFeedbackTranscripcion"></div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================
+         JAVASCRIPT
+    ========================================== -->
+
+    <script
+        src="{% static 'usuarios/sistema_presentacion.js' %}?v=2"
+    ></script>
+
+</body>
+
+</html>

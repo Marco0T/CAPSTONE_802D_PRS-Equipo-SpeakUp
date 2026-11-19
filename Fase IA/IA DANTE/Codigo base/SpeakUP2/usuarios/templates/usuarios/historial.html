@@ -13,7 +13,7 @@
     <!-- Conexión con el archivo CSS -->
     <link
         rel="stylesheet"
-        href="{% static 'usuarios/historial.css' %}"
+        href="{% static 'usuarios/historial.css' %}?v=5"
     >
 </head>
 
@@ -41,7 +41,7 @@
 
         <p class="subtitulo">
             Revisa tus prácticas anteriores y observa
-            cómo mejoras tus habilidades de comunicación.
+            cómo mejora tu lenguaje corporal al presentar.
         </p>
 
         {% if conversaciones %}
@@ -59,7 +59,7 @@
                         <div class="informacion">
 
                             <p>
-                                <strong>Situación:</strong>
+                                <strong>Tipo de presentación:</strong>
                                 {{ conversacion.situacion|capfirst }}
                             </p>
 
@@ -76,16 +76,6 @@
                             <p>
                                 <strong>Hora de término:</strong>
                                 {{ conversacion.fecha_fin|date:"H:i" }}
-                            </p>
-
-                            <p>
-                                <strong>Total de palabras:</strong>
-                                {{ conversacion.cantidad_palabras }}
-                            </p>
-
-                            <p>
-                                <strong>Palabras de relleno:</strong>
-                                {{ conversacion.palabras_relleno }}
                             </p>
 
                         </div>
@@ -134,7 +124,7 @@
                 </h3>
 
                 <p>
-                    Realiza tu primera práctica de voz
+                    Realiza tu primera práctica de video
                     para comenzar a registrar tu progreso.
                 </p>
 
